@@ -1,7 +1,7 @@
 {
-  "name": "graph-query-builder",
+  "name": "graph-query-visualizer",
   "version": "0.1.0",
-  "description": "Build a SPARQL query by constructing a graph and vice versa",
+  "description": "Build a SPARQL query by constructing a visual graph and vice versa",
   "main": "src/index.js",
   "repository": {
     "type": "git",
@@ -17,7 +17,7 @@
   "author": "benjaminaaron",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/benjaminaaron/graph-query-builder/issues"
+    "url": "https://github.com/benjaminaaron/graph-query-visualizer/issues"
   },
-  "homepage": "https://github.com/benjaminaaron/graph-query-builder"
+  "homepage": "https://github.com/benjaminaaron/graph-query-visualizer"
 }
