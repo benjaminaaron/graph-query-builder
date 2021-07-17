@@ -1,0 +1,23 @@
+{
+  "name": "graph-query-builder",
+  "version": "0.1.0",
+  "description": "Build a SPARQL query by constructing a graph and vice versa",
+  "main": "src/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/benjaminaaron/graph-query-builder.git"
+  },
+  "keywords": [
+    "graph",
+    "SPARQL",
+    "query",
+    "triplestore",
+    "RDF"
+  ],
+  "author": "benjaminaaron",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/benjaminaaron/graph-query-builder/issues"
+  },
+  "homepage": "https://github.com/benjaminaaron/graph-query-builder"
+}
