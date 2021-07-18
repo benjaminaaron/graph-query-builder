@@ -2,7 +2,7 @@
   "name": "graph-query-visualizer",
   "version": "0.2.0",
   "description": "Build a SPARQL query by constructing a visual graph and vice versa",
-  "main": "dist/graph-query-visualizer.js",
+  "main": "dist/bundle.js",
   "scripts": {
     "build": "webpack"
   },
@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/benjaminaaron/graph-query-visualizer",
   "files": [
-    "dist/graph-query-visualizer.js"
+    "dist/bundle.js"
   ],
   "devDependencies": {
     "webpack": "^5.45.1",

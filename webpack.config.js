@@ -3,7 +3,7 @@ const path = require('path');
 module.exports = {
     entry: './src/index.js',
     output: {
-        filename: 'graph-query-visualizer.js',
+        filename: 'bundle.js',
         path: path.resolve(__dirname, 'dist'),
     },
     watch: true
