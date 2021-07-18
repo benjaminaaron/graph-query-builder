@@ -1,6 +1,6 @@
 {
   "name": "graph-query-visualizer",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Build a SPARQL query by constructing a visual graph and vice versa",
   "main": "dist/graph-query-visualizer.js",
   "scripts": {
