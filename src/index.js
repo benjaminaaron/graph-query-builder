@@ -1,5 +1,3 @@
-import { foo, getStr, setStr } from './utils.js';
+import { initGraph } from './GraphController.js';
 
-console.log(foo);
-setStr("test123");
-console.log(getStr());
+initGraph(document.getElementById('graphDiv'));
