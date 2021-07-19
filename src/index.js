@@ -1,3 +1,3 @@
-import { initGraphBuilder } from './GraphBuilder.js';
+import { initGraphBuilder } from './graph-builder.js';
 
 window.initGraphBuilder = initGraphBuilder;
