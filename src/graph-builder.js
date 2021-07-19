@@ -1,4 +1,4 @@
-import ForceGraph from 'force-graph';
+import { buildGraph, updateGraphData } from './graph-shared';
 
 let graph;
 let nodeIdCounter = 0, edgeIdCounter = 0;
@@ -6,10 +6,6 @@ let nodes = [], edges = [];
 let dragSourceNode = null, interimEdge = null;
 const SNAP_IN_DISTANCE = 15;
 const SNAP_OUT_DISTANCE = 40;
-
-const updateGraphData = () => {
-    graph.graphData({ nodes: nodes, links: edges });
-};
 
 const distance = (node1, node2) => {
     return Math.sqrt(Math.pow(node1.x - node2.x, 2) + Math.pow(node1.y - node2.y, 2));
@@ -21,14 +17,14 @@ const rename = (nodeOrEdge, type) => {
         return;
     }
     nodeOrEdge.name = value;
-    updateGraphData();
+    updateGraphData(graph, nodes, edges);
 };
 
 const setInterimEdge = (source, target) => {
     let edgeId = edgeIdCounter ++;
     interimEdge = { id: edgeId, source: source, target: target, name: 'edge_' + edgeId };
     edges.push(interimEdge);
-    updateGraphData();
+    updateGraphData(graph, nodes, edges);
 };
 
 const removeEdge = edge => {
@@ -38,7 +34,7 @@ const removeEdge = edge => {
 const removeInterimEdgeWithoutAddingIt = () => {
     removeEdge(interimEdge);
     interimEdge = null;
-    updateGraphData();
+    updateGraphData(graph, nodes, edges);
 };
 
 const removeNode = node => {
@@ -47,11 +43,7 @@ const removeNode = node => {
 };
 
 const initGraphBuilder = (graphDiv, width, height) => {
-    graph = ForceGraph()(graphDiv)
-        .width(width)
-        .height(height)
-        .linkDirectionalArrowLength(6)
-        .linkDirectionalArrowRelPos(1)
+    graph = buildGraph(graphDiv, width, height)
         .onNodeDrag(dragNode => {
             dragSourceNode = dragNode;
             for (let node of nodes) {
@@ -76,7 +68,7 @@ const initGraphBuilder = (graphDiv, width, height) => {
         .onNodeDragEnd(() => {
             dragSourceNode = null;
             interimEdge = null;
-            updateGraphData();
+            updateGraphData(graph, nodes, edges);
         })
         .nodeColor(node => node === dragSourceNode || (interimEdge && (node === interimEdge.source || node === interimEdge.target)) ? 'orange' : null)
         .linkColor(edge => edge === interimEdge ? 'orange' : '#bbbbbb')
@@ -89,11 +81,9 @@ const initGraphBuilder = (graphDiv, width, height) => {
             let coords = graph.screen2GraphCoords(event.layerX, event.layerY);
             let nodeId = nodeIdCounter ++;
             nodes.push({ id: nodeId, x: coords.x, y: coords.y, name: 'node_' + nodeId });
-            updateGraphData();
+            updateGraphData(graph, nodes, edges);
         });
-    updateGraphData();
-    let canvasEl = graphDiv.firstChild.firstChild;
-    canvasEl.style.border = "1px solid silver";
+    updateGraphData(graph, nodes, edges);
 }
 
 export { initGraphBuilder }

@@ -10,7 +10,7 @@
     </div>-->
     <table>
         <tr>
-            <td>
+            <td style="vertical-align: top; padding-right: 7px;">
                 <div id="graphBuilderDiv"></div>
                 <div id="sparqlQueryDiv"></div>
             </td>
@@ -21,5 +21,6 @@
     </table>
     <script>
         initGraphBuilder(document.getElementById('graphBuilderDiv'), 550, 300);
+        initGraphOutput(document.getElementById('graphOutputDiv'), 700, 550);
     </script>
 </body>
