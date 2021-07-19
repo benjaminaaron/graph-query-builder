@@ -1,3 +1,3 @@
-import { initGraph } from './GraphController.js';
+import { init } from './GraphController.js';
 
-initGraph(document.getElementById('graphDiv'));
+window.initGraphBuilder = init;

@@ -1,6 +1,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Graph Query Visualizer</title>
+    <script src="../dist/bundle.js"></script>
 </head>
 <body>
     <!--<div style="text-align: center; color: silver">
@@ -8,5 +9,7 @@
         <b>Rename</b> node or edge by clicking on it, <b>Remove</b> node or edge by right-clicking on it
     </div>-->
     <div id="graphDiv"></div>
-    <script src="../dist/bundle.js"></script>
+    <script>
+        initGraphBuilder(document.getElementById('graphDiv'), 600, 400);
+    </script>
 </body>

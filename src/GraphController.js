@@ -47,10 +47,10 @@ const removeNode = node => {
 
 let graph;
 
-const initGraph = graphDiv => {
+const init = (graphDiv, width, height) => {
     graph = ForceGraph()(graphDiv)
-        .width(600)
-        .height(400)
+        .width(width)
+        .height(height)
         .linkDirectionalArrowLength(6)
         .linkDirectionalArrowRelPos(1)
         .onNodeDrag(dragNode => {
@@ -97,4 +97,4 @@ const initGraph = graphDiv => {
     canvasEl.style.border = "1px solid silver";
 }
 
-export { initGraph }
+export { init }
