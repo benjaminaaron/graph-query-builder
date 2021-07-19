@@ -1,10 +1,11 @@
 import ForceGraph from 'force-graph';
 
+let graph;
 let nodeIdCounter = 0, edgeIdCounter = 0;
 let nodes = [], edges = [];
 let dragSourceNode = null, interimEdge = null;
-const snapInDistance = 15;
-const snapOutDistance = 40;
+const SNAP_IN_DISTANCE = 15;
+const SNAP_OUT_DISTANCE = 40;
 
 const updateGraphData = () => {
     graph.graphData({ nodes: nodes, links: edges });
@@ -45,8 +46,6 @@ const removeNode = node => {
     nodes.splice(nodes.indexOf(node), 1);
 };
 
-let graph;
-
 const initGraphBuilder = (graphDiv, width, height) => {
     graph = ForceGraph()(graphDiv)
         .width(width)
@@ -60,17 +59,17 @@ const initGraphBuilder = (graphDiv, width, height) => {
                     continue;
                 }
                 // close enough: snap onto node as target for suggested edge
-                if (!interimEdge && distance(dragNode, node) < snapInDistance) {
+                if (!interimEdge && distance(dragNode, node) < SNAP_IN_DISTANCE) {
                     setInterimEdge(dragSourceNode, node);
                 }
                 // close enough to other node: snap over to other node as target for suggested edge
-                if (interimEdge && node !== interimEdge.target && distance(dragNode, node) < snapInDistance) {
+                if (interimEdge && node !== interimEdge.target && distance(dragNode, node) < SNAP_IN_DISTANCE) {
                     removeEdge(interimEdge);
                     setInterimEdge(dragSourceNode, node);
                 }
             }
             // far away enough: snap out of the current target node
-            if (interimEdge && distance(dragNode, interimEdge.target) > snapOutDistance) {
+            if (interimEdge && distance(dragNode, interimEdge.target) > SNAP_OUT_DISTANCE) {
                 removeInterimEdgeWithoutAddingIt();
             }
         })
@@ -88,8 +87,8 @@ const initGraphBuilder = (graphDiv, width, height) => {
         .onLinkRightClick((edge, event) => removeEdge(edge))
         .onBackgroundClick(event => {
             let coords = graph.screen2GraphCoords(event.layerX, event.layerY);
-            let nodeId = nodeIdCounter++;
-            nodes.push({id: nodeId, x: coords.x, y: coords.y, name: 'node_' + nodeId});
+            let nodeId = nodeIdCounter ++;
+            nodes.push({ id: nodeId, x: coords.x, y: coords.y, name: 'node_' + nodeId });
             updateGraphData();
         });
     updateGraphData();
