@@ -47,7 +47,7 @@ const removeNode = node => {
 
 let graph;
 
-const init = (graphDiv, width, height) => {
+const initGraphBuilder = (graphDiv, width, height) => {
     graph = ForceGraph()(graphDiv)
         .width(width)
         .height(height)
@@ -97,4 +97,4 @@ const init = (graphDiv, width, height) => {
     canvasEl.style.border = "1px solid silver";
 }
 
-export { init }
+export { initGraphBuilder }

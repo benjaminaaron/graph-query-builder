@@ -1,3 +1,3 @@
-import { init } from './GraphController.js';
+import { initGraphBuilder } from './GraphBuilder.js';
 
-window.initGraphBuilder = init;
+window.initGraphBuilder = initGraphBuilder;
