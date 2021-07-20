@@ -31,6 +31,7 @@
     "webpack-cli": "^4.7.2"
   },
   "dependencies": {
+    "@triply/yasgui": "^4.2.16",
     "force-graph": "^1.42.1"
   }
 }
