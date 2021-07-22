@@ -7,4 +7,5 @@ window.init = config => {
     initGraphBuilder(config.graphBuilder);
     initSparqlEditor(config.sparqlEditor);
     initGraphOutput(config.graphOutput);
+    initModel();
 };
