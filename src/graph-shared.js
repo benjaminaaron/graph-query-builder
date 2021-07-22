@@ -1,13 +1,13 @@
 import ForceGraph from 'force-graph';
 
-const buildGraph = (graphDiv, width, height) => {
-    let graph = ForceGraph()(graphDiv)
-        .width(width)
-        .height(height)
+const buildGraph = config => {
+    let graph = ForceGraph()(config.div)
+        .width(config.width)
+        .height(config.height)
         .linkDirectionalArrowLength(6)
         .linkDirectionalArrowRelPos(1)
         .linkCurvature('curvature');
-    let canvasEl = graphDiv.firstChild.firstChild;
+    let canvasEl = config.div.firstChild.firstChild;
     canvasEl.style.border = "1px solid silver";
     return graph;
 };
@@ -26,7 +26,6 @@ const computeEdgeCurvatures = edges => {
     // 1. assign each edge a nodePairId that combines their source and target independent of the edge-direction
     // 2. group edges together that share the same two nodes or are self-loops
     edges.forEach(edge => {
-        console.log(edge);
         edge.nodePairId = edge.source.id <= edge.target.id ? (edge.source.id + "_" + edge.target.id) : (edge.target.id + "_" + edge.source.id);
         edge.curvature = null; // reset all in case they had values
         let map = edge.source === edge.target ? selfLoopEdges : sameNodesEdges;

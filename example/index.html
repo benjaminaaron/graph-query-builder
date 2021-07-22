@@ -27,8 +27,20 @@
         </tr>
     </table>
     <script>
-        initGraphBuilder(document.getElementById('graphBuilderDiv'), 600, 300);
-        initSparqlEditor(document.getElementById('sparqlEditorDiv'));
-        initGraphOutput(document.getElementById('graphOutputDiv'), 700, 630);
+        init({
+            graphBuilder: {
+                div: document.getElementById('graphBuilderDiv'),
+                width: 600,
+                height: 300
+            },
+            sparqlEditor: {
+                div: document.getElementById('sparqlEditorDiv')
+            },
+            graphOutput: {
+                div: document.getElementById('graphOutputDiv'),
+                width: 700,
+                height: 630
+            }
+        });
     </script>
 </body>

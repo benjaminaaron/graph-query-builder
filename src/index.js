@@ -1,7 +1,10 @@
-import { initGraphBuilder } from './graph-builder.js';
-import { initSparqlEditor } from './sparql-editor.js';
-import { initGraphOutput } from './graph-output.js';
+import { initGraphBuilder } from './graph-builder';
+import { initSparqlEditor } from './sparql-editor';
+import { initGraphOutput } from './graph-output';
+import { initModel } from "./model";
 
-window.initGraphBuilder = initGraphBuilder;
-window.initSparqlEditor = initSparqlEditor;
-window.initGraphOutput = initGraphOutput;
+window.init = config => {
+    initGraphBuilder(config.graphBuilder);
+    initSparqlEditor(config.sparqlEditor);
+    initGraphOutput(config.graphOutput);
+};

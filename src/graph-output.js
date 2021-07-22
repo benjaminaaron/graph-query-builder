@@ -3,8 +3,8 @@ import { buildGraph, updateGraphData } from './graph-shared';
 let graph;
 let nodes = [], edges = [];
 
-const initGraphOutput = (graphDiv, width, height) => {
-    graph = buildGraph(graphDiv, width, height);
+const initGraphOutput = config => {
+    graph = buildGraph(config);
     updateGraphData(graph, nodes, edges);
 };
 

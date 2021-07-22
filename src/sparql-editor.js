@@ -2,13 +2,11 @@ import Yasgui from "@triply/yasgui";
 
 let yasgui, yasqe;
 
-const initSparqlEditor = editorDiv => {
-    yasgui = new Yasgui(editorDiv);
+const initSparqlEditor = config => {
+    yasgui = new Yasgui(config.div, {}); // TODO config --> much more lightweight
     // make sure only one tab is open
     let tab;
-    while (tab = yasgui.getTab()) {
-        tab.close();
-    }
+    while (tab = yasgui.getTab()) { tab.close(); }
     tab = yasgui.addTab(true, {});
     tab.setQuery("SELECT * WHERE {\n ?sub ?pred ?obj .\n}");
     yasqe = yasgui.getTab().getYasqe();

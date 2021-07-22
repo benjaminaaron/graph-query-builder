@@ -42,8 +42,8 @@ const removeNode = node => {
     nodes.splice(nodes.indexOf(node), 1);
 };
 
-const initGraphBuilder = (graphDiv, width, height) => {
-    graph = buildGraph(graphDiv, width, height)
+const initGraphBuilder = config => {
+    graph = buildGraph(config)
         .onNodeDrag(dragNode => {
             dragSourceNode = dragNode;
             for (let node of nodes) {
