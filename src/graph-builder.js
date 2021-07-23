@@ -1,5 +1,7 @@
 import { buildGraph, updateGraphData } from './graph-shared';
 
+// possible feature-rich alternative: https://github.com/wbkd/react-flow --> https://www.npmjs.com/package/react-flow-renderer
+
 let graph;
 let nodeIdCounter = 0, edgeIdCounter = 0;
 let nodes = [], edges = [];
