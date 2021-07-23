@@ -1,16 +1,15 @@
 import { onValidEditorChange } from './sparql-editor'
-import { setGraphBuilderData } from './graph-builder';
+import { setGraphBuilderData, onGraphChange } from './graph-builder';
 const SparqlParser = require('sparqljs').Parser;
 const parser = new SparqlParser();
-
-let queryModel;
-let graphModel;
 
 const initModel = () => {
     onValidEditorChange(queryStr => {
         buildGraphFromQuery(parser.parse(queryStr));
     });
-    // onGraphChange(graph => {});
+    onGraphChange((nodesInfo, edgesInfo) => {
+        buildQueryFromGraph(nodesInfo, edgesInfo);
+    });
 };
 
 const buildGraphFromQuery = queryModel => {
@@ -28,12 +27,12 @@ const buildGraphFromQuery = queryModel => {
 };
 
 const addOrGetNode = (nodes, tripleEntity) => {
-    let value = getName(tripleEntity);
-    if (!nodes[value]) {
+    let name = getName(tripleEntity);
+    if (!nodes[name]) {
         // termType can be: NamedNode, Variable, Literal
-        nodes[value] = { id: Object.keys(nodes).length, name: value, type: tripleEntity.termType };
+        nodes[name] = { id: Object.keys(nodes).length, name: name, type: tripleEntity.termType };
     }
-    return nodes[value].id;
+    return nodes[name].id;
 };
 
 const getName = entity => {
@@ -43,7 +42,8 @@ const getName = entity => {
     return entity.value;
 };
 
-const buildQueryFromGraph = graphModel => {
+const buildQueryFromGraph = (nodesInfo, edgesInfo) => {
+    console.log(nodesInfo, edgesInfo);
    // TODO
 };
 

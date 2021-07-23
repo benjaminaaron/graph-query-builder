@@ -31,6 +31,7 @@ const rename = (nodeOrEdge, type) => {
         return;
     }
     nodeOrEdge.name = value;
+    graphChanged();
     update();
 };
 
@@ -54,6 +55,7 @@ const removeInterimEdgeWithoutAddingIt = () => {
 const removeNode = node => {
     edges.filter(edge => edge.source === node || edge.target === node).forEach(edge => removeEdge(edge));
     nodes.splice(nodes.indexOf(node), 1);
+    graphChanged();
 };
 
 const initGraphBuilder = config => {
@@ -81,6 +83,9 @@ const initGraphBuilder = config => {
         })
         .onNodeDragEnd(() => {
             dragSourceNode = null;
+            if (interimEdge) {
+                graphChanged();
+            }
             interimEdge = null;
             update();
         })
@@ -90,7 +95,10 @@ const initGraphBuilder = config => {
         .onNodeClick((node, event) => rename(node, 'node'))
         .onNodeRightClick((node, event) => removeNode(node))
         .onLinkClick((edge, event) => rename(edge, 'edge'))
-        .onLinkRightClick((edge, event) => removeEdge(edge))
+        .onLinkRightClick((edge, event) => {
+            removeEdge(edge);
+            graphChanged();
+        })
         .onBackgroundClick(event => {
             let coords = graph.screen2GraphCoords(event.layerX, event.layerY);
             let nodeId = nodeIdCounter ++;
@@ -98,6 +106,28 @@ const initGraphBuilder = config => {
             update();
         });
     update();
-}
+};
 
-export { initGraphBuilder, setGraphBuilderData }
+const graphChanged = () => {
+    if (!graphChangeCallback) {
+        return;
+    }
+    let edgesInfo = [];
+    let nodesInfo = {};
+    let connectedNodeIds = new Set();
+    edges.forEach(edge => {
+        connectedNodeIds.add(edge.source.id);
+        connectedNodeIds.add(edge.target.id);
+        edgesInfo.push({ sourceId: edge.source.id, targetId: edge.target.id, name: edge.name })
+    });
+    nodes.filter(node => connectedNodeIds.has(node.id)).forEach(node => nodesInfo[node.id] = node.name);
+    graphChangeCallback(nodesInfo, edgesInfo);
+};
+
+let graphChangeCallback;
+
+const onGraphChange = callback => {
+    graphChangeCallback = callback;
+};
+
+export { initGraphBuilder, setGraphBuilderData, onGraphChange }
