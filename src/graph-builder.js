@@ -14,6 +14,10 @@ const setGraphBuilderData = (_nodes, _edges) => {
     edges = _edges;
     nodeIdCounter = nodes.length;
     edgeIdCounter = edges.length;
+    update();
+};
+
+const update = () => {
     updateGraphData(graph, nodes, edges);
 };
 
@@ -27,14 +31,14 @@ const rename = (nodeOrEdge, type) => {
         return;
     }
     nodeOrEdge.name = value;
-    updateGraphData(graph, nodes, edges);
+    update();
 };
 
 const setInterimEdge = (source, target) => {
     let edgeId = edgeIdCounter ++;
     interimEdge = { id: edgeId, source: source, target: target, name: 'edge_' + edgeId };
     edges.push(interimEdge);
-    updateGraphData(graph, nodes, edges);
+    update();
 };
 
 const removeEdge = edge => {
@@ -44,7 +48,7 @@ const removeEdge = edge => {
 const removeInterimEdgeWithoutAddingIt = () => {
     removeEdge(interimEdge);
     interimEdge = null;
-    updateGraphData(graph, nodes, edges);
+    update();
 };
 
 const removeNode = node => {
@@ -78,7 +82,7 @@ const initGraphBuilder = config => {
         .onNodeDragEnd(() => {
             dragSourceNode = null;
             interimEdge = null;
-            updateGraphData(graph, nodes, edges);
+            update();
         })
         .nodeColor(node => node === dragSourceNode || (interimEdge && (node === interimEdge.source || node === interimEdge.target)) ? 'orange' : null)
         .linkColor(edge => edge === interimEdge ? 'orange' : '#bbbbbb')
@@ -91,9 +95,9 @@ const initGraphBuilder = config => {
             let coords = graph.screen2GraphCoords(event.layerX, event.layerY);
             let nodeId = nodeIdCounter ++;
             nodes.push({ id: nodeId, x: coords.x, y: coords.y, name: 'node_' + nodeId });
-            updateGraphData(graph, nodes, edges);
+            update();
         });
-    updateGraphData(graph, nodes, edges);
+    update();
 }
 
 export { initGraphBuilder, setGraphBuilderData }
