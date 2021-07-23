@@ -9,6 +9,14 @@ let dragSourceNode = null, interimEdge = null;
 const SNAP_IN_DISTANCE = 15;
 const SNAP_OUT_DISTANCE = 40;
 
+const setGraphBuilderData = (_nodes, _edges) => {
+    nodes = _nodes;
+    edges = _edges;
+    nodeIdCounter = nodes.length;
+    edgeIdCounter = edges.length;
+    updateGraphData(graph, nodes, edges);
+};
+
 const distance = (node1, node2) => {
     return Math.sqrt(Math.pow(node1.x - node2.x, 2) + Math.pow(node1.y - node2.y, 2));
 };
@@ -88,4 +96,4 @@ const initGraphBuilder = config => {
     updateGraphData(graph, nodes, edges);
 }
 
-export { initGraphBuilder }
+export { initGraphBuilder, setGraphBuilderData }

@@ -26,7 +26,9 @@ const computeEdgeCurvatures = edges => {
     // 1. assign each edge a nodePairId that combines their source and target independent of the edge-direction
     // 2. group edges together that share the same two nodes or are self-loops
     edges.forEach(edge => {
-        edge.nodePairId = edge.source.id <= edge.target.id ? (edge.source.id + "_" + edge.target.id) : (edge.target.id + "_" + edge.source.id);
+        let sourceId = edge.source.id === undefined ? edge.source : edge.source.id;
+        let targetId = edge.target.id === undefined ? edge.target : edge.target.id;
+        edge.nodePairId = sourceId <= targetId ? (sourceId + "_" + targetId) : (targetId + "_" + sourceId);
         edge.curvature = null; // reset all in case they had values
         let map = edge.source === edge.target ? selfLoopEdges : sameNodesEdges;
         if (!map[edge.nodePairId]) {
