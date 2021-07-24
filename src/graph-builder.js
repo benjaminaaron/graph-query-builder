@@ -125,7 +125,7 @@ const initGraphBuilder = config => {
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillStyle = 'white';
-            ctx.fillText(node.name, node.x, node.y);
+            ctx.fillText(node.name, node.x, node.y + fontSize * 0.1); // corrective factor to move text down a tiny bit within the rectangle
         });
     update();
 };
