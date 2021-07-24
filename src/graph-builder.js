@@ -38,7 +38,7 @@ const rename = (nodeOrEdge, type) => {
 
 const setInterimEdge = (source, target) => {
     let edgeId = edgeIdCounter ++; // this raises the ID with every snapIn-snapOut, maybe find a less "Id-wasteful" approach? TODO
-    interimEdge = { id: edgeId, source: source, target: target, name: 'edge_' + edgeId, type: "IN_DRAGGING" };
+    interimEdge = { id: edgeId, source: source, target: target, name: '?pred' + edgeId, type: "IN_DRAGGING" };
     edges.push(interimEdge);
     update();
 };
@@ -108,7 +108,7 @@ const initGraphBuilder = config => {
         })
         .onBackgroundClick(event => {
             let coords = graph.screen2GraphCoords(event.layerX, event.layerY);
-            let value = prompt("Name this node:", 'node_' + nodeIdCounter);
+            let value = prompt("Name this node:", '?var' + nodeIdCounter);
             if (!value) {
                 return;
             }
@@ -131,11 +131,13 @@ const initGraphBuilder = config => {
 };
 
 const determineType = name => {
-    if (name.startsWith("http")) {
+    if (name.startsWith("?")) {
+        return "Variable";
+    }
+    if (name.startsWith("http") || name.includes(":")) {
         return "NamedNode";
     }
-    return "Variable";
-    // support literals and prefix:something TODO
+    return "Literal";
 };
 
 const getColorForType = type => {
