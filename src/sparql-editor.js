@@ -13,6 +13,7 @@ const initSparqlEditor = config => {
 };
 
 const setQuery = query => {
+    skipOnChangeCallbackOnce = true;
     yasgui.getTab().setQuery(query);
 };
 
@@ -20,8 +21,14 @@ const getQuery = () => {
     return yasgui.getTab().getQuery();
 };
 
+let skipOnChangeCallbackOnce = false;
+
 const onValidEditorChange = onChange => {
-    yasqe.on("change", e => {
+    yasqe.on("change", () => {
+        if (skipOnChangeCallbackOnce) {
+            skipOnChangeCallbackOnce = false;
+            return;
+        }
         if (yasqe.queryValid) {
             onChange(getQuery());
         }
