@@ -7,8 +7,7 @@ const initSparqlEditor = config => {
     // make sure only one tab is open
     let tab;
     while (tab = yasgui.getTab()) { tab.close(); }
-    tab = yasgui.addTab(true, {});
-    tab.setQuery("SELECT * WHERE {\n ?sub ?pred ?obj .\n}");
+    yasgui.addTab(true, {});
     yasqe = yasgui.getTab().getYasqe();
 };
 

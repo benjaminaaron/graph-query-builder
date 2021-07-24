@@ -6,15 +6,16 @@ const SparqlGenerator = require('sparqljs').Generator;
 const generator = new SparqlGenerator({});
 
 const initModel = () => {
-    onValidEditorChange(queryStr => {
-        buildGraphFromQuery(parser.parse(queryStr));
-    });
-    onValidGraphChange((prefixes, triples) => {
-        buildQueryFromGraph(prefixes, triples);
-    });
+    onValidEditorChange(queryStr => buildGraphFromQuery(queryStr));
+    onValidGraphChange((prefixes, triples) => buildQueryFromGraph(prefixes, triples));
+
+    let initialQuery = "SELECT * WHERE {\n ?sub ?pred ?obj .\n}";
+    setQuery(initialQuery);
+    buildGraphFromQuery(initialQuery);
 };
 
-const buildGraphFromQuery = queryJson => {
+const buildGraphFromQuery = queryStr => {
+    let queryJson = parser.parse(queryStr);
     let edges = [];
     let nodes = {};
     let queryType = queryJson.queryType;
