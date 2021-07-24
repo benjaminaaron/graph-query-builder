@@ -185,8 +185,8 @@ const graphChanged = () => {
 
 let graphChangeCallback;
 
-const onGraphChange = callback => {
+const onValidGraphChange = callback => {
     graphChangeCallback = callback;
 };
 
-export { initGraphBuilder, setGraphBuilderData, onGraphChange }
+export { initGraphBuilder, setGraphBuilderData, onValidGraphChange }

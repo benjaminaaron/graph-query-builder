@@ -1,5 +1,5 @@
 import { onValidEditorChange, setQuery } from './sparql-editor'
-import { setGraphBuilderData, onGraphChange } from './graph-builder';
+import { setGraphBuilderData, onValidGraphChange } from './graph-builder';
 const SparqlParser = require('sparqljs').Parser;
 const parser = new SparqlParser();
 const SparqlGenerator = require('sparqljs').Generator;
@@ -9,8 +9,8 @@ const initModel = () => {
     onValidEditorChange(queryStr => {
         buildGraphFromQuery(parser.parse(queryStr));
     });
-    onGraphChange((nodesInfo, edgesInfo) => {
-        buildQueryFromGraph(nodesInfo, edgesInfo);
+    onValidGraphChange((prefixes, triples) => {
+        buildQueryFromGraph(prefixes, triples);
     });
 };
 
