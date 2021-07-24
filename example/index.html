@@ -16,12 +16,15 @@
     </div>-->
     <table>
         <tr>
-            <td style="vertical-align: top; padding-right: 15px;">
-                <div id="graphBuilderDiv"></div>
-                <br/>
+            <td style="vertical-align: bottom; width: 600px; padding-right: 10px">
                 <div id="sparqlEditorDiv"></div>
             </td>
-            <td>
+            <td style="padding-bottom: 10px">
+                <div id="graphBuilderDiv"></div>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
                 <div id="graphOutputDiv"></div>
             </td>
         </tr>
@@ -30,16 +33,16 @@
         init({
             graphBuilder: {
                 div: document.getElementById('graphBuilderDiv'),
-                width: 600,
-                height: 300
+                width: 800,
+                height: 500
             },
             sparqlEditor: {
                 div: document.getElementById('sparqlEditorDiv')
             },
             graphOutput: {
                 div: document.getElementById('graphOutputDiv'),
-                width: 700,
-                height: 630
+                width: 1414,
+                height: 600
             }
         });
     </script>
