@@ -206,6 +206,8 @@ const initGraphBuilder = config => {
             ctx.fillStyle = 'white';
             ctx.fillText(node.label, node.x, node.y + fontSize * 0.1); // corrective factor to move text down a tiny bit within the rectangle
         });
+        //.linkCanvasObjectMode(() => 'after')
+        //.linkCanvasObject((edge, ctx) => {}) TODO
     update();
 };
 
@@ -247,6 +249,10 @@ const graphChanged = () => {
         });
     });
 
+    // prune unused prefixes --> doesn't seem necessary, the editor drops them automatically
+    // let allShortFormLabels = new Set(nodes.map(node => node.label).concat(edges.map(edge => edge.label))
+    //    .filter(label => !label.startsWith("http") && label.includes(":")).map(shortLabel => shortLabel.split(":")[0]));
+    // let unusedPrefixKeys = Object.keys(prefixes).filter(key => !allShortFormLabels.has(key));
     graphChangeCallback(prefixes, triples);
 };
 
