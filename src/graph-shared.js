@@ -6,8 +6,8 @@ const buildGraph = config => {
         .height(config.height)
         .nodeLabel('tooltip')
         .linkLabel('tooltip')
-        .linkDirectionalArrowLength(6)
-        //.linkDirectionalArrowRelPos(1)
+        .linkDirectionalArrowLength(4)
+        .linkDirectionalArrowRelPos(0.9)
         .linkCurvature('curvature');
     let canvasEl = config.div.firstChild.firstChild;
     canvasEl.style.border = "1px solid silver";

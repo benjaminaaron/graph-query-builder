@@ -205,9 +205,40 @@ const initGraphBuilder = config => {
             ctx.textBaseline = 'middle';
             ctx.fillStyle = 'white';
             ctx.fillText(node.label, node.x, node.y + fontSize * 0.1); // corrective factor to move text down a tiny bit within the rectangle
+        })
+        .linkCanvasObjectMode(() => 'after')
+        .linkCanvasObject((edge, ctx) => {
+            const start = edge.source;
+            const end = edge.target;
+            if (edge === interimEdge || typeof start !== 'object' || typeof end !== 'object') return;
+            const MAX_FONT_SIZE = 4;
+            const LABEL_NODE_MARGIN = graph.nodeRelSize() * 1.5;
+            // calculate label positioning
+            const textPos = Object.assign(...['x', 'y'].map(c => ({ [c]: start[c] + (end[c] - start[c]) / 2 }))); // calc middle point
+            const relLink = { x: end.x - start.x, y: end.y - start.y };
+            const maxTextLength = Math.sqrt(Math.pow(relLink.x, 2) + Math.pow(relLink.y, 2)) - LABEL_NODE_MARGIN * 2;
+            let textAngle = Math.atan2(relLink.y, relLink.x);
+            // maintain label vertical orientation for legibility
+            if (textAngle > Math.PI / 2) textAngle = - (Math.PI - textAngle);
+            if (textAngle < - Math.PI / 2) textAngle = - (- Math.PI - textAngle);
+            // estimate fontSize to fit in link length
+            ctx.font = '1px Sans-Serif';
+            const fontSize = Math.min(MAX_FONT_SIZE, maxTextLength / ctx.measureText(edge.label).width);
+            ctx.font = `${fontSize}px Sans-Serif`;
+            const textWidth = ctx.measureText(edge.label).width;
+            const rectDim = [textWidth, fontSize].map(n => n + fontSize * 0.8); // padding
+            // draw text label (with background rect)
+            ctx.save();
+            ctx.translate(textPos.x, textPos.y);
+            ctx.rotate(textAngle);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.fillRect(- rectDim[0] / 2, - rectDim[1] / 2, ...rectDim);
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = getColorForType(edge.type);
+            ctx.fillText(edge.label, 0, 0);
+            ctx.restore();
         });
-        //.linkCanvasObjectMode(() => 'after')
-        //.linkCanvasObject((edge, ctx) => {}) TODO
     update();
 };
 
