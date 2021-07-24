@@ -44,16 +44,16 @@ const buildQueryFromGraph = (nodesInfo, edgesInfo) => {
     edgesInfo.forEach(edge => {
         triples.push({
            subject: {
-               termType: "Variable",
-               value: nodesInfo[edge.sourceId]
+               termType: nodesInfo[edge.sourceId].type,
+               value: nodesInfo[edge.sourceId].name
            },
            predicate: {
-               termType: "Variable",
+               termType: edge.type,
                value: edge.name
            },
            object: {
-               termType: "Variable",
-               value: nodesInfo[edge.targetId]
+               termType: nodesInfo[edge.targetId].type,
+               value: nodesInfo[edge.targetId].name
            }
         });
     });

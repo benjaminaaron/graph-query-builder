@@ -31,13 +31,14 @@ const rename = (nodeOrEdge, type) => {
         return;
     }
     nodeOrEdge.name = value;
+    nodeOrEdge.type = determineType(value);
     graphChanged();
     update();
 };
 
 const setInterimEdge = (source, target) => {
-    let edgeId = edgeIdCounter ++;
-    interimEdge = { id: edgeId, source: source, target: target, name: 'edge_' + edgeId, type: "Variable" };
+    let edgeId = edgeIdCounter ++; // this raises the ID with every snapIn-snapOut, maybe find a less "Id-wasteful" approach? TODO
+    interimEdge = { id: edgeId, source: source, target: target, name: 'edge_' + edgeId, type: "IN_DRAGGING" };
     edges.push(interimEdge);
     update();
 };
@@ -84,12 +85,19 @@ const initGraphBuilder = config => {
         .onNodeDragEnd(() => {
             dragSourceNode = null;
             if (interimEdge) {
-                graphChanged();
+                let value = prompt("Name this edge:", interimEdge.name);
+                if (value) {
+                    interimEdge.name = value;
+                    interimEdge.type = determineType(value);
+                    graphChanged();
+                } else {
+                    removeEdge(interimEdge);
+                }
             }
             interimEdge = null;
             update();
         })
-        .linkColor(edge => getColorForType(edge === interimEdge ? 'IN_DRAGGING' : edge.type))
+        .linkColor(edge => getColorForType(edge.type))
         .linkLineDash(edge => edge === interimEdge ? [2, 2] : [])
         .onNodeClick((node, event) => rename(node, 'node'))
         .onNodeRightClick((node, event) => removeNode(node))
@@ -100,8 +108,11 @@ const initGraphBuilder = config => {
         })
         .onBackgroundClick(event => {
             let coords = graph.screen2GraphCoords(event.layerX, event.layerY);
-            let nodeId = nodeIdCounter ++;
-            nodes.push({ id: nodeId, x: coords.x, y: coords.y, name: 'node_' + nodeId, type: "Variable" });
+            let value = prompt("Name this node:", 'node_' + nodeIdCounter);
+            if (!value) {
+                return;
+            }
+            nodes.push({ id: nodeIdCounter ++, x: coords.x, y: coords.y, name: value, type: determineType(value) });
             update();
         })
         .nodeCanvasObject((node, ctx, globalScale) => {
@@ -117,6 +128,14 @@ const initGraphBuilder = config => {
             ctx.fillText(node.name, node.x, node.y);
         });
     update();
+};
+
+const determineType = name => {
+    if (name.startsWith("http")) {
+        return "NamedNode";
+    }
+    return "Variable";
+    // support literals and prefix:something TODO
 };
 
 const getColorForType = type => {
@@ -152,9 +171,13 @@ const graphChanged = () => {
     edges.forEach(edge => {
         connectedNodeIds.add(edge.source.id);
         connectedNodeIds.add(edge.target.id);
-        edgesInfo.push({ sourceId: edge.source.id, targetId: edge.target.id, name: edge.name })
+        edgesInfo.push({ sourceId: edge.source.id, targetId: edge.target.id, name: edge.name, type: edge.type })
     });
-    nodes.filter(node => connectedNodeIds.has(node.id)).forEach(node => nodesInfo[node.id] = node.name);
+    nodes.filter(node => connectedNodeIds.has(node.id)).forEach(node => nodesInfo[node.id] = {
+        name: node.name,
+        type: node.type
+    });
+    // build the queryJson-triples already here and only pass those? or stick to separation of concerns and let the model build those TODO
     graphChangeCallback(nodesInfo, edgesInfo);
 };
 
