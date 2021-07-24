@@ -4,6 +4,8 @@ const buildGraph = config => {
     let graph = ForceGraph()(config.div)
         .width(config.width)
         .height(config.height)
+        .nodeLabel('tooltip')
+        .linkLabel('tooltip')
         .linkDirectionalArrowLength(6)
         //.linkDirectionalArrowRelPos(1)
         .linkCurvature('curvature');

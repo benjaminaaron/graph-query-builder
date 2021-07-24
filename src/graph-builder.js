@@ -5,16 +5,99 @@ import { buildGraph, updateGraphData } from './graph-shared';
 let graph;
 let nodeIdCounter = 0, edgeIdCounter = 0;
 let nodes = [], edges = [];
+let prefixes = {};
 let dragSourceNode = null, interimEdge = null;
 const SNAP_IN_DISTANCE = 15;
 const SNAP_OUT_DISTANCE = 40;
 
-const setGraphBuilderData = (_nodes, _edges) => {
+const setGraphBuilderData = (_prefixes, _nodes, _edges) => {
     nodes = _nodes;
     edges = _edges;
+    prefixes = _prefixes;
+    nodes.forEach(node => interpretFromModel(node));
+    edges.forEach(edge => interpretFromModel(edge));
     nodeIdCounter = nodes.length;
     edgeIdCounter = edges.length;
     update();
+};
+
+const interpretFromModel = nodeOrEdge => {
+    switch (nodeOrEdge.type) {
+        case 'NamedNode':
+            nodeOrEdge.label = buildShortFormIfPrefixExists(nodeOrEdge.value);
+            nodeOrEdge.tooltip = nodeOrEdge.value;
+            break;
+        case 'Literal':
+            nodeOrEdge.label = nodeOrEdge.value;
+            nodeOrEdge.tooltip = null;
+            break;
+        case 'Variable':
+            nodeOrEdge.label = "?" + nodeOrEdge.value;
+            nodeOrEdge.tooltip = null;
+            break;
+    }
+};
+
+const buildShortFormIfPrefixExists = fullUri => {
+    let ret = fullUri;
+    Object.entries(prefixes).forEach(([short, uri]) => {
+        if (fullUri.startsWith(uri)) {
+            ret = short + ":" + fullUri.substr(uri.length);
+        }
+    });
+    return ret;
+};
+
+const expandShortForm = shortForm => {
+    let baseUri = prefixes[shortForm.split(':')[0]];
+    return baseUri + (baseUri.endsWith("#") || baseUri.endsWith("/") ? "" : "#") + shortForm.split(':')[1];
+};
+
+const interpretInput = (nodeOrEdge, input) => {
+    if (input.startsWith("?")) {
+        nodeOrEdge.type = "Variable";
+        nodeOrEdge.value = input.substr(1);
+        nodeOrEdge.label = input;
+        nodeOrEdge.tooltip = null;
+        return nodeOrEdge;
+    }
+    if (input.startsWith("http")) {
+        nodeOrEdge.type = "NamedNode";
+        nodeOrEdge.value = input;
+        nodeOrEdge.label = buildShortFormIfPrefixExists(input);
+        nodeOrEdge.tooltip = input;
+        return nodeOrEdge;
+    }
+    if (input.includes(":")) {
+        nodeOrEdge.type = "NamedNode";
+        let fullUri = expandShortForm(input);
+        nodeOrEdge.value = fullUri;
+        nodeOrEdge.label = input;
+        nodeOrEdge.tooltip = fullUri;
+        return nodeOrEdge;
+    }
+    // if we reach here, it must be a Literal
+    nodeOrEdge.type = "Literal";
+    nodeOrEdge.value = input;
+    nodeOrEdge.label = input;
+    nodeOrEdge.tooltip = null;
+    return nodeOrEdge;
+};
+
+const prefixCreatedIfUnknownShortFormUsed = input => {
+    if (input.startsWith("http") || !input.includes(":")) {
+        return true;
+    }
+    let shortForm = input.split(":")[0];
+    if (prefixes[shortForm]) {
+        return true;
+    }
+    let fullUri = prompt("New prefix: which URI does " + shortForm + " stand for:", "http://onto.de/default/");
+    if (!fullUri) {
+        return false;
+    }
+    prefixes[shortForm] = fullUri;
+    return true;
 };
 
 const update = () => {
@@ -25,20 +108,23 @@ const distance = (node1, node2) => {
     return Math.sqrt(Math.pow(node1.x - node2.x, 2) + Math.pow(node1.y - node2.y, 2));
 };
 
-const rename = (nodeOrEdge, type) => {
-    let value = prompt('Name this ' + type + ':', nodeOrEdge.name);
-    if (!value) {
-        return;
+const getInput = (nodeOrEdge, type) => {
+    let input = prompt('Set a value for this ' + type + ':', nodeOrEdge.label);
+    if (!input) {
+        return false;
     }
-    nodeOrEdge.name = value;
-    nodeOrEdge.type = determineType(value);
+    if (!prefixCreatedIfUnknownShortFormUsed(input)) {
+        return false;
+    }
+    interpretInput(nodeOrEdge, input);
     graphChanged();
     update();
+    return true;
 };
 
 const setInterimEdge = (source, target) => {
     let edgeId = edgeIdCounter ++; // this raises the ID with every snapIn-snapOut, maybe find a less "Id-wasteful" approach? TODO
-    interimEdge = { id: edgeId, source: source, target: target, name: '?pred' + edgeId, type: "IN_DRAGGING" };
+    interimEdge = { id: edgeId, source: source, target: target, label: '?pred' + edgeId, type: "IN_DRAGGING" };
     edges.push(interimEdge);
     update();
 };
@@ -84,60 +170,43 @@ const initGraphBuilder = config => {
         })
         .onNodeDragEnd(() => {
             dragSourceNode = null;
-            if (interimEdge) {
-                let value = prompt("Name this edge:", interimEdge.name);
-                if (value) {
-                    interimEdge.name = value;
-                    interimEdge.type = determineType(value);
-                    graphChanged();
-                } else {
-                    removeEdge(interimEdge);
-                }
+            if (interimEdge && !getInput(interimEdge, "edge")) {
+                removeEdge(interimEdge);
             }
             interimEdge = null;
             update();
         })
         .linkColor(edge => getColorForType(edge.type))
         .linkLineDash(edge => edge === interimEdge ? [2, 2] : [])
-        .onNodeClick((node, event) => rename(node, 'node'))
+        .onNodeClick((node, event) => getInput(node, 'node'))
         .onNodeRightClick((node, event) => removeNode(node))
-        .onLinkClick((edge, event) => rename(edge, 'edge'))
+        .onLinkClick((edge, event) => getInput(edge, 'edge'))
         .onLinkRightClick((edge, event) => {
             removeEdge(edge);
             graphChanged();
         })
         .onBackgroundClick(event => {
             let coords = graph.screen2GraphCoords(event.layerX, event.layerY);
-            let value = prompt("Name this node:", '?var' + nodeIdCounter);
-            if (!value) {
-                return;
+            let nodeId = nodeIdCounter ++;
+            let node = { id: nodeId, x: coords.x, y: coords.y, label: '?var' + nodeId };
+            if (getInput(node, "node")) {
+                nodes.push(node);
+                update();
             }
-            nodes.push({ id: nodeIdCounter ++, x: coords.x, y: coords.y, name: value, type: determineType(value) });
-            update();
         })
         .nodeCanvasObject((node, ctx, globalScale) => {
-            const fontSize = 18 / globalScale;
+            const fontSize = 14 / globalScale;
             ctx.font = `${fontSize}px Sans-Serif`;
-            const textWidth = ctx.measureText(node.name).width;
+            const textWidth = ctx.measureText(node.label).width;
             const rectDim = [textWidth, fontSize].map(n => n + fontSize * 0.8); // padding
             ctx.fillStyle = getColorForType(node === dragSourceNode || (interimEdge && (node === interimEdge.source || node === interimEdge.target)) ? 'IN_DRAGGING' : node.type);
             ctx.fillRect(node.x - rectDim[0] / 2, node.y - rectDim[1] / 2, ...rectDim);
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillStyle = 'white';
-            ctx.fillText(node.name, node.x, node.y + fontSize * 0.1); // corrective factor to move text down a tiny bit within the rectangle
+            ctx.fillText(node.label, node.x, node.y + fontSize * 0.1); // corrective factor to move text down a tiny bit within the rectangle
         });
     update();
-};
-
-const determineType = name => {
-    if (name.startsWith("?")) {
-        return "Variable";
-    }
-    if (name.startsWith("http") || name.includes(":")) {
-        return "NamedNode";
-    }
-    return "Literal";
 };
 
 const getColorForType = type => {
@@ -160,20 +229,25 @@ const graphChanged = () => {
     if (!graphChangeCallback) {
         return;
     }
-    let edgesInfo = [];
-    let nodesInfo = {};
-    let connectedNodeIds = new Set();
+    let triples = [];
     edges.forEach(edge => {
-        connectedNodeIds.add(edge.source.id);
-        connectedNodeIds.add(edge.target.id);
-        edgesInfo.push({ sourceId: edge.source.id, targetId: edge.target.id, name: edge.name, type: edge.type })
+        triples.push({
+            subject: {
+                termType: edge.source.type,
+                value: edge.source.value
+            },
+            predicate: {
+                termType: edge.type,
+                value: edge.value
+            },
+            object: {
+                termType: edge.target.type,
+                value: edge.target.value
+            }
+        });
     });
-    nodes.filter(node => connectedNodeIds.has(node.id)).forEach(node => nodesInfo[node.id] = {
-        name: node.name,
-        type: node.type
-    });
-    // build the queryJson-triples already here and only pass those? or stick to separation of concerns and let the model build those TODO
-    graphChangeCallback(nodesInfo, edgesInfo);
+
+    graphChangeCallback(prefixes, triples);
 };
 
 let graphChangeCallback;

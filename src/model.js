@@ -23,43 +23,22 @@ const buildGraphFromQuery = queryJson => {
     queryJson.where[0].triples.forEach(triple => {
         let subId = addOrGetNode(nodes, triple.subject);
         let objId = addOrGetNode(nodes, triple.object);
-        edges.push({ id: edges.length, source: subId, target: objId, name: triple.predicate.value, type: triple.predicate.termType });
+        edges.push({ id: edges.length, source: subId, target: objId, value: triple.predicate.value, type: triple.predicate.termType });
     });
-    setGraphBuilderData(Object.values(nodes), edges);
+    setGraphBuilderData(prefixes, Object.values(nodes), edges);
 };
 
 const addOrGetNode = (nodes, tripleEntity) => {
-    let name = tripleEntity.value;
-    if (!nodes[name]) {
-        // termType can be: NamedNode, Variable, Literal
-        nodes[name] = { id: Object.keys(nodes).length, name: name, type: tripleEntity.termType };
+    let value = tripleEntity.value;
+    if (!nodes[value]) {
+        nodes[value] = { id: Object.keys(nodes).length, value: value, type: tripleEntity.termType };
     }
-    return nodes[name].id;
+    return nodes[value].id;
 };
 
-const buildQueryFromGraph = (nodesInfo, edgesInfo) => {
-    console.log(nodesInfo, edgesInfo);
-
-    let triples = [];
-    edgesInfo.forEach(edge => {
-        triples.push({
-           subject: {
-               termType: nodesInfo[edge.sourceId].type,
-               value: nodesInfo[edge.sourceId].name
-           },
-           predicate: {
-               termType: edge.type,
-               value: edge.name
-           },
-           object: {
-               termType: nodesInfo[edge.targetId].type,
-               value: nodesInfo[edge.targetId].name
-           }
-        });
-    });
-
+const buildQueryFromGraph = (prefixes, triples) => {
     let queryJson = {
-        prefixes: {},
+        prefixes: prefixes,
         queryType: "SELECT",
         type: "query",
         variables: [{
@@ -71,10 +50,7 @@ const buildQueryFromGraph = (nodesInfo, edgesInfo) => {
             triples: triples
         }]
     };
-
-    console.log(queryJson);
     let queryStr = generator.stringify(queryJson);
-    console.log(queryStr);
     setQuery(queryStr);
 };
 
