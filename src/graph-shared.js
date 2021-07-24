@@ -5,7 +5,7 @@ const buildGraph = config => {
         .width(config.width)
         .height(config.height)
         .linkDirectionalArrowLength(6)
-        .linkDirectionalArrowRelPos(1)
+        //.linkDirectionalArrowRelPos(1)
         .linkCurvature('curvature');
     let canvasEl = config.div.firstChild.firstChild;
     canvasEl.style.border = "1px solid silver";
