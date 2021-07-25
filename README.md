@@ -23,10 +23,9 @@ I developed this for usage in HTML. I might see later how to make it useful as `
 
 `npm i --save graph-query-visualizer`
 
-Import the `bundle.js` into your `.html` file:
+Import `bundle.js` and `yasgui.min.css` into your `.html` file:
 
 ```html
 <script src="./node_modules/graph-query-visualizer/dist/bundle.js"></script>
+<link href="./node_modules/graph-query-visualizer/dist/yasgui.min.css" rel="stylesheet" />
 ```
-
-**TODO**: bundle the Yasgui CSS
