@@ -1,2 +1,32 @@
 # graph-query-visualizer
-Build a SPARQL query by constructing a visual graph and vice versa
+Build a SPARQL query by constructing a visual graph and vice versa. I moved this out of my [OntoEngine](https://github.com/benjaminaaron/OntoEngine) coding project to make it also useful independent of it.
+
+Available as npm package [here](https://www.npmjs.com/package/graph-query-visualizer). Demo of `example.index.html` here (**TODO**).
+
+## Tech stack
+
+- [force-graph](https://github.com/vasturiano/force-graph/) for the graph visualization
+- [Yasgui](https://github.com/TriplyDB/Yasgui) for the SPARQL editor
+- [SPARQL.js](https://github.com/RubenVerborgh/SPARQL.js) for parsing and generating the SPARQL query
+
+## Usage
+
+### Setup this repo for development
+
+`npm install`
+
+`npm run build` creates the `bundle.js` (via webpack) in `dist/` which is used by `example/index.html`
+
+### Use this as dependency in your project
+
+I developed this for usage in HTML. I might see later how to make it useful as `import` and `require`.
+
+`npm i --save graph-query-visualizer`
+
+Import the `bundle.js` into your `.html` file:
+
+```html
+<script src="./node_modules/graph-query-visualizer/dist/bundle.js"></script>
+```
+
+**TODO**: bundle the Yasgui CSS
