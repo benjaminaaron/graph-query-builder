@@ -1,6 +1,7 @@
 import { onValidSparqlChange, setSparqlQuery } from './sparql-editor'
 import { setGraphBuilderData, onValidGraphChange } from './graph-builder';
 import { onEditorChange, setEditorValue } from "./language-interpreter";
+import { extractWordFromUri } from "./utils";
 
 const SparqlParser = require('sparqljs').Parser;
 const parser = new SparqlParser();
@@ -25,7 +26,7 @@ const translateToOtherDomains = (sourceDomain, data) => {
     switch (sourceDomain) {
         case Domain.SPARQL:
             buildGraphFromQuery(data);
-            setEditorValue("new value from SPARQL");
+            buildLanguageFromQuery(data);
             break;
         case Domain.GRAPH:
             buildQueryFromGraph(data);
@@ -76,6 +77,51 @@ const buildQueryFromGraph = data => {
         }]
     };
     setSparqlQuery(generator.stringify(queryJson));
+};
+
+const buildLanguageFromQuery = queryStr => {
+    let queryJson = parser.parse(queryStr);
+    let triples = queryJson.where[0].triples;
+    triples.forEach(triple => triple.sharing = {});
+
+    for (let a = 0; a < triples.length; a ++) {
+        let tripleA = triples[a];
+        setWord(tripleA.subject);
+        setWord(tripleA.predicate);
+        setWord(tripleA.object);
+        for (let b = a + 1; b < triples.length; b ++) {
+            let tripleB = triples[b];
+            let subSame = tripleA.subject.value === tripleB.subject.value;
+            let predSame = tripleA.predicate.value === tripleB.predicate.value;
+            let objSame = tripleA.object.value === tripleB.object.value
+                && tripleA.object.termType !== "Literal" && tripleB.object.termType !== "Literal";
+            if (subSame && !predSame && !objSame) addSharingType(tripleA, tripleB, a, b,"sub");
+            if (!subSame && predSame && !objSame) addSharingType(tripleA, tripleB, a, b,"pred");
+            if (!subSame && !predSame && objSame) addSharingType(tripleA, tripleB, a, b,"obj");
+            if (subSame && predSame && !objSame) addSharingType(tripleA, tripleB, a, b,"subPred");
+            if (subSame && !predSame && objSame) addSharingType(tripleA, tripleB, a, b,"subObj");
+            if (!subSame && predSame && objSame) addSharingType(tripleA, tripleB, a, b,"predObj");
+        }
+    }
+
+    // TODO
+    // setEditorValue(value);
+};
+
+const setWord = entity => {
+    let value = entity.value;
+    if (entity.termType === "NamedNode") {
+        value = extractWordFromUri(value);
+    }
+    entity.word = value;
+    entity.wordNormal = value.replace(/([A-Z])/g, " $1").toLowerCase(); // via stackoverflow.com/a/7225450/2474159
+};
+
+const addSharingType = (tripleA, tripleB, idxA, idxB, type) => {
+    if (!tripleA.sharing[type]) tripleA.sharing[type] = [];
+    if (!tripleB.sharing[type]) tripleB.sharing[type] = [];
+    tripleA.sharing[type].push(idxB);
+    tripleB.sharing[type].push(idxA);
 };
 
 export { initModel }
