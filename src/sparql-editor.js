@@ -16,22 +16,18 @@ const setQuery = query => {
     yasgui.getTab().setQuery(query);
 };
 
-const getQuery = () => {
-    return yasgui.getTab().getQuery();
-};
-
 let skipOnChangeCallbackOnce = false;
 
-const onValidEditorChange = onChange => {
+const onValidSparqlChange = onChange => {
     yasqe.on("change", () => {
         if (skipOnChangeCallbackOnce) {
             skipOnChangeCallbackOnce = false;
             return;
         }
         if (yasqe.queryValid) {
-            onChange(getQuery());
+            onChange(yasgui.getTab().getQuery());
         }
     });
 };
 
-export { initSparqlEditor, setQuery, getQuery, onValidEditorChange }
+export { initSparqlEditor, setSparqlQuery, onValidSparqlChange }

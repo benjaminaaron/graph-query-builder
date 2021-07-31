@@ -284,7 +284,7 @@ const graphChanged = () => {
     // let allShortFormLabels = new Set(nodes.map(node => node.label).concat(edges.map(edge => edge.label))
     //    .filter(label => !label.startsWith("http") && label.includes(":")).map(shortLabel => shortLabel.split(":")[0]));
     // let unusedPrefixKeys = Object.keys(prefixes).filter(key => !allShortFormLabels.has(key));
-    graphChangeCallback(prefixes, triples);
+    graphChangeCallback({ prefixes: prefixes, triples: triples });
 };
 
 let graphChangeCallback;

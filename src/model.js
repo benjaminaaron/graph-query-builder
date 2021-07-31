@@ -1,17 +1,34 @@
-import { onValidEditorChange, setQuery } from './sparql-editor'
+import { onValidSparqlChange, setSparqlQuery } from './sparql-editor'
 import { setGraphBuilderData, onValidGraphChange } from './graph-builder';
 const SparqlParser = require('sparqljs').Parser;
 const parser = new SparqlParser();
 const SparqlGenerator = require('sparqljs').Generator;
 const generator = new SparqlGenerator({});
 
+const Domain = {
+    SPARQL: 1, GRAPH: 2, LANGUAGE: 3
+};
+
 const initModel = () => {
-    onValidEditorChange(queryStr => buildGraphFromQuery(queryStr));
-    onValidGraphChange((prefixes, triples) => buildQueryFromGraph(prefixes, triples));
+    onValidSparqlChange(data => translateToOtherDomains(Domain.SPARQL, data));
+    onValidGraphChange(data => translateToOtherDomains(Domain.GRAPH, data));
 
     let initialQuery = "SELECT * WHERE {\n ?sub ?pred ?obj .\n}";
-    setQuery(initialQuery);
-    buildGraphFromQuery(initialQuery);
+    setSparqlQuery(initialQuery);
+    translateToOtherDomains(Domain.SPARQL, initialQuery);
+};
+
+const translateToOtherDomains = (sourceDomain, data) => {
+    switch (sourceDomain) {
+        case Domain.SPARQL:
+            buildGraphFromQuery(data);
+            break;
+        case Domain.GRAPH:
+            buildQueryFromGraph(data);
+            break;
+        case Domain.LANGUAGE:
+            break;
+    }
 };
 
 const buildGraphFromQuery = queryStr => {
@@ -37,9 +54,9 @@ const addOrGetNode = (nodes, tripleEntity) => {
     return nodes[value].id;
 };
 
-const buildQueryFromGraph = (prefixes, triples) => {
+const buildQueryFromGraph = data => {
     let queryJson = {
-        prefixes: prefixes,
+        prefixes: data.prefixes,
         queryType: "SELECT",
         type: "query",
         variables: [{
@@ -48,11 +65,11 @@ const buildQueryFromGraph = (prefixes, triples) => {
         }],
         where: [{
             type: "bgp",
-            triples: triples
+            triples: data.triples
         }]
     };
     let queryStr = generator.stringify(queryJson);
-    setQuery(queryStr);
+    setSparqlQuery(queryStr);
 };
 
 export { initModel }
