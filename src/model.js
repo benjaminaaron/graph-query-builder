@@ -8,10 +8,11 @@ const generator = new SparqlGenerator({});
 const Domain = {
     SPARQL: 1, GRAPH: 2, LANGUAGE: 3
 };
+let acceptingChanges = true; // to avoid changes triggering circular onChange-calls
 
 const initModel = () => {
-    onValidSparqlChange(data => translateToOtherDomains(Domain.SPARQL, data));
-    onValidGraphChange(data => translateToOtherDomains(Domain.GRAPH, data));
+    onValidSparqlChange(data => acceptingChanges && translateToOtherDomains(Domain.SPARQL, data));
+    onValidGraphChange(data => acceptingChanges && translateToOtherDomains(Domain.GRAPH, data));
 
     let initialQuery = "SELECT * WHERE {\n ?sub ?pred ?obj .\n}";
     setSparqlQuery(initialQuery);
@@ -19,6 +20,7 @@ const initModel = () => {
 };
 
 const translateToOtherDomains = (sourceDomain, data) => {
+    acceptingChanges = false;
     switch (sourceDomain) {
         case Domain.SPARQL:
             buildGraphFromQuery(data);
@@ -29,6 +31,7 @@ const translateToOtherDomains = (sourceDomain, data) => {
         case Domain.LANGUAGE:
             break;
     }
+    acceptingChanges = true;
 };
 
 const buildGraphFromQuery = queryStr => {
