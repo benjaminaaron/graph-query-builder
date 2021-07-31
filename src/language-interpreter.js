@@ -18,7 +18,8 @@ const initLanguageInterpreter = config => {
     config.div.style.border = "1px solid silver";
     editor = CodeMirror(config.div, {
         value: "some text in line one.\none some text in the second line.",
-        mode:  "sparqlTermTypes"
+        mode:  "sparqlTermTypes",
+        readOnly: "nocursor"
     });
 };
 
