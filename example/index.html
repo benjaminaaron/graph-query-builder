@@ -11,6 +11,16 @@
         .yasgui .controlbar, .tabslist, .yasqe_buttons, .yasr {
             display: none !important;
         }
+        #sparqlEditorDiv .CodeMirror {
+            font-size: 16px !important;
+        }
+        #languageInterpreterDiv .CodeMirror {
+            font-family: "Ubuntu Mono",serif;
+            font-size: 20px !important;
+        }
+        .cm-termTypeHolder {
+            color: orange;
+        }
     </style>
 </head>
 <body>
@@ -20,8 +30,9 @@
     </div>-->
     <table>
         <tr>
-            <td style="vertical-align: bottom; width: 600px; padding-right: 10px">
+            <td style="vertical-align: top; width: 600px; padding-right: 10px">
                 <div id="sparqlEditorDiv"></div>
+                <div id="languageInterpreterDiv"></div>
             </td>
             <td style="padding-bottom: 10px">
                 <div id="graphBuilderDiv"></div>
@@ -38,10 +49,13 @@
             graphBuilder: {
                 div: document.getElementById('graphBuilderDiv'),
                 width: 800,
-                height: 500
+                height: 613
             },
             sparqlEditor: {
                 div: document.getElementById('sparqlEditorDiv')
+            },
+            languageInterpreter: {
+                div: document.getElementById('languageInterpreterDiv')
             },
             graphOutput: {
                 div: document.getElementById('graphOutputDiv'),

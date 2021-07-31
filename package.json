@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/benjaminaaron/graph-query-visualizer",
   "devDependencies": {
+    "codemirror": "^5.62.2",
     "copy-webpack-plugin": "^9.0.1",
     "webpack": "^5.45.1",
     "webpack-cli": "^4.7.2"
