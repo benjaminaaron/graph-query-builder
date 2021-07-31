@@ -20,11 +20,6 @@ const initLanguageInterpreter = config => {
         value: "some text in line one.\none some text in the second line.",
         mode:  "sparqlTermTypes"
     });
-    console.log(parseSentences());
-    /*editor.on("change", () => {
-        console.log(editor.getValue());
-    });
-    editor.setValue("");*/
 };
 
 const parseSentences = () => {
@@ -42,7 +37,18 @@ const parseSentences = () => {
             oneSentence.push(token.string);
         }
     });
+    if (oneSentence.length > 0) { // no dot at all or dangling words in the end without closing with a dot
+        sentences.push(oneSentence);
+    }
     return sentences;
 };
 
-export { initLanguageInterpreter }
+const setEditorValue = value => {
+    editor.setValue(value);
+};
+
+const onEditorChange = onChange => {
+    editor.on("change", () => onChange(parseSentences()));
+};
+
+export { initLanguageInterpreter, onEditorChange, setEditorValue }

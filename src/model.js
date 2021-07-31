@@ -1,5 +1,7 @@
 import { onValidSparqlChange, setSparqlQuery } from './sparql-editor'
 import { setGraphBuilderData, onValidGraphChange } from './graph-builder';
+import { onEditorChange, setEditorValue } from "./language-interpreter";
+
 const SparqlParser = require('sparqljs').Parser;
 const parser = new SparqlParser();
 const SparqlGenerator = require('sparqljs').Generator;
@@ -13,6 +15,7 @@ let acceptingChanges = true; // to avoid changes triggering circular onChange-ca
 const initModel = () => {
     onValidSparqlChange(data => acceptingChanges && translateToOtherDomains(Domain.SPARQL, data));
     onValidGraphChange(data => acceptingChanges && translateToOtherDomains(Domain.GRAPH, data));
+    onEditorChange(data => acceptingChanges && translateToOtherDomains(Domain.LANGUAGE, data));
 
     setSparqlQuery("SELECT * WHERE {\n ?sub ?pred ?obj .\n}");
 };
@@ -22,11 +25,14 @@ const translateToOtherDomains = (sourceDomain, data) => {
     switch (sourceDomain) {
         case Domain.SPARQL:
             buildGraphFromQuery(data);
+            setEditorValue("new value from SPARQL");
             break;
         case Domain.GRAPH:
             buildQueryFromGraph(data);
+            setEditorValue("new value from GRAPH");
             break;
         case Domain.LANGUAGE:
+            console.log("New value from editor to SPARQL and GRAPH: ", data);
             break;
     }
     acceptingChanges = true;

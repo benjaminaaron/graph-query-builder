@@ -16,11 +16,7 @@ const setSparqlQuery = query => {
 };
 
 const onValidSparqlChange = onChange => {
-    yasqe.on("change", () => {
-        if (yasqe.queryValid) {
-            onChange(yasgui.getTab().getQuery());
-        }
-    });
+    yasqe.on("change", () => yasqe.queryValid && onChange(yasgui.getTab().getQuery()));
 };
 
 export { initSparqlEditor, setSparqlQuery, onValidSparqlChange }
