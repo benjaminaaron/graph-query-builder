@@ -14,9 +14,7 @@ const initModel = () => {
     onValidSparqlChange(data => acceptingChanges && translateToOtherDomains(Domain.SPARQL, data));
     onValidGraphChange(data => acceptingChanges && translateToOtherDomains(Domain.GRAPH, data));
 
-    let initialQuery = "SELECT * WHERE {\n ?sub ?pred ?obj .\n}";
-    setSparqlQuery(initialQuery);
-    translateToOtherDomains(Domain.SPARQL, initialQuery);
+    setSparqlQuery("SELECT * WHERE {\n ?sub ?pred ?obj .\n}");
 };
 
 const translateToOtherDomains = (sourceDomain, data) => {
@@ -71,8 +69,7 @@ const buildQueryFromGraph = data => {
             triples: data.triples
         }]
     };
-    let queryStr = generator.stringify(queryJson);
-    setSparqlQuery(queryStr);
+    setSparqlQuery(generator.stringify(queryJson));
 };
 
 export { initModel }

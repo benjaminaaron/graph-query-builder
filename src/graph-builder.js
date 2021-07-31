@@ -108,7 +108,7 @@ const distance = (node1, node2) => {
     return Math.sqrt(Math.pow(node1.x - node2.x, 2) + Math.pow(node1.y - node2.y, 2));
 };
 
-const getInput = (nodeOrEdge, type) => {
+const getInput = (nodeOrEdge, type, callUpdates = true) => {
     let input = prompt('Set a value for this ' + type + ':', nodeOrEdge.label);
     if (!input) {
         return false;
@@ -117,8 +117,10 @@ const getInput = (nodeOrEdge, type) => {
         return false;
     }
     interpretInput(nodeOrEdge, input);
-    graphChanged();
-    update();
+    if (callUpdates) {
+        graphChanged();
+        update();
+    }
     return true;
 };
 
@@ -189,7 +191,7 @@ const initGraphBuilder = config => {
             let coords = graph.screen2GraphCoords(event.layerX, event.layerY);
             let nodeId = nodeIdCounter ++;
             let node = { id: nodeId, x: coords.x, y: coords.y, label: '?var' + nodeId };
-            if (getInput(node, "node")) {
+            if (getInput(node, "node", false)) {
                 nodes.push(node);
                 update();
             }
