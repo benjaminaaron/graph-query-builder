@@ -18,15 +18,23 @@ const initModel = () => {
     onValidGraphChange(data => acceptingChanges && translateToOtherDomains(Domain.GRAPH, data));
     onEditorChange(data => acceptingChanges && translateToOtherDomains(Domain.LANGUAGE, data));
 
-    setSparqlQuery("SELECT * WHERE {\n ?sub ?pred ?obj .\n}");
+    let query = "PREFIX : <http://onto.de/default#>\n" +
+        "SELECT * WHERE {\n" +
+        "  ?sub :isA :Human ;\n" +
+        "  \t:livesIn ?obj .\n" +
+        "  ?obj :isA :city ;\n" +
+        "  \t:locatedIn :Germany .\n" +
+        "}";
+    setSparqlQuery(query);
 };
 
 const translateToOtherDomains = (sourceDomain, data) => {
     acceptingChanges = false;
     switch (sourceDomain) {
         case Domain.SPARQL:
-            buildGraphFromQuery(data);
-            buildLanguageFromQuery(data);
+            let graph = buildGraphFromQuery(data);
+            setGraphBuilderData(graph.prefixes, Object.values(graph.nodes), graph.edges);
+            updateLanguageEditor(data, graph);
             break;
         case Domain.GRAPH:
             buildQueryFromGraph(data);
@@ -44,14 +52,13 @@ const buildGraphFromQuery = queryStr => {
     let edges = [];
     let nodes = {};
     let queryType = queryJson.queryType;
-    let prefixes = queryJson.prefixes;
     let variables = queryJson.variables.map(varObj => varObj.value);
     queryJson.where[0].triples.forEach(triple => {
         let subId = addOrGetNode(nodes, triple.subject);
         let objId = addOrGetNode(nodes, triple.object);
         edges.push({ id: edges.length, source: subId, target: objId, value: triple.predicate.value, type: triple.predicate.termType });
     });
-    setGraphBuilderData(prefixes, Object.values(nodes), edges);
+    return { prefixes: queryJson.prefixes, nodes: nodes, edges: edges };
 };
 
 const addOrGetNode = (nodes, tripleEntity) => {
@@ -79,7 +86,7 @@ const buildQueryFromGraph = data => {
     setSparqlQuery(generator.stringify(queryJson));
 };
 
-const buildLanguageFromQuery = queryStr => {
+const updateLanguageEditor = (queryStr, graph) => {
     let queryJson = parser.parse(queryStr);
     let triples = queryJson.where[0].triples;
     triples.forEach(triple => triple.sharing = {});
@@ -93,8 +100,8 @@ const buildLanguageFromQuery = queryStr => {
             let tripleB = triples[b];
             let subSame = tripleA.subject.value === tripleB.subject.value;
             let predSame = tripleA.predicate.value === tripleB.predicate.value;
-            let objSame = tripleA.object.value === tripleB.object.value
-                && tripleA.object.termType !== "Literal" && tripleB.object.termType !== "Literal";
+            let objSame = tripleA.object.value === tripleB.object.value;
+                // && tripleA.object.termType !== "Literal" && tripleB.object.termType !== "Literal";
             if (subSame && !predSame && !objSame) addSharingType(tripleA, tripleB, a, b,"sub");
             if (!subSame && predSame && !objSame) addSharingType(tripleA, tripleB, a, b,"pred");
             if (!subSame && !predSame && objSame) addSharingType(tripleA, tripleB, a, b,"obj");
