@@ -54,9 +54,10 @@ const buildGraphFromQuery = queryStr => {
     let queryType = queryJson.queryType;
     let variables = queryJson.variables.map(varObj => varObj.value);
     queryJson.where[0].triples.forEach(triple => {
-        let subId = addOrGetNode(nodes, triple.subject);
-        let objId = addOrGetNode(nodes, triple.object);
-        edges.push({ id: edges.length, source: subId, target: objId, value: triple.predicate.value, type: triple.predicate.termType });
+        let subNode = addOrGetNode(nodes, triple.subject);
+        let objNode = addOrGetNode(nodes, triple.object);
+        edges.push({ id: edges.length, source: subNode.id, target: objNode.id, value: triple.predicate.value, type: triple.predicate.termType });
+        subNode.children.push(objNode);
     });
     return { prefixes: queryJson.prefixes, nodes: nodes, edges: edges };
 };
@@ -64,9 +65,9 @@ const buildGraphFromQuery = queryStr => {
 const addOrGetNode = (nodes, tripleEntity) => {
     let value = tripleEntity.value;
     if (!nodes[value]) {
-        nodes[value] = { id: Object.keys(nodes).length, value: value, type: tripleEntity.termType };
+        nodes[value] = { id: Object.keys(nodes).length, value: value, type: tripleEntity.termType, children: [] };
     }
-    return nodes[value].id;
+    return nodes[value];
 };
 
 const buildQueryFromGraph = data => {
