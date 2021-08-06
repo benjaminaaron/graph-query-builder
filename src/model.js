@@ -33,8 +33,10 @@ const translateToOtherDomains = (sourceDomain, data) => {
     switch (sourceDomain) {
         case Domain.SPARQL:
             let graph = buildGraphFromQuery(data);
-            setGraphBuilderData(graph.prefixes, Object.values(graph.nodes), graph.edges);
             updateLanguageEditor(data, graph);
+            // by sending it to graph builder, source/target of edges will be the node objects instead of
+            // just their ids, plus a few more things from the force-graph library
+            setGraphBuilderData(graph.prefixes, Object.values(graph.nodes), graph.edges);
             break;
         case Domain.GRAPH:
             buildQueryFromGraph(data);
@@ -116,7 +118,7 @@ const updateLanguageEditor = (queryStr, graph) => {
         }
     }
 
-    let longestPath = findLongestPath(graph.nodes);
+    let longestPath = findLongestPath(graph);
 
     // TODO
     // setEditorValue(value);
@@ -131,16 +133,25 @@ const setWord = entity => {
     entity.wordNormal = value.replace(/([A-Z])/g, " $1").toLowerCase(); // via stackoverflow.com/a/7225450/2474159
 };
 
-const findLongestPath = nodes => {
+const findLongestPath = graph => {
     let allPathsFromAllNodes = [];
-    Object.values(nodes).forEach(node => {
+    Object.values(graph.nodes).forEach(node => {
         let allPathsFromThisNode = [];
         walkFromHere(node, [], allPathsFromThisNode);
         allPathsFromAllNodes.push.apply(allPathsFromAllNodes, allPathsFromThisNode);
     });
-    return allPathsFromAllNodes.reduce((prev, current) => {
+    let longestPath = allPathsFromAllNodes.reduce((prev, current) => {
         return (prev.length > current.length) ? prev : current
     });
+    let path = [graph.nodes[longestPath[0]]];
+    for (let i = 0; i < longestPath.length - 1; i++) {
+        let node = graph.nodes[longestPath[i]];
+        let nextNode = graph.nodes[longestPath[i + 1]];
+        let edgeBetween = graph.edges.filter(edge => edge.source === node.id && edge.target === nextNode.id)[0];
+        path.push(edgeBetween);
+        path.push(nextNode);
+    }
+    return path;
 };
 
 
