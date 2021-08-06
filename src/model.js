@@ -57,7 +57,11 @@ const buildGraphFromQuery = queryStr => {
         let subNode = addOrGetNode(nodes, triple.subject);
         let objNode = addOrGetNode(nodes, triple.object);
         edges.push({ id: edges.length, source: subNode.id, target: objNode.id, value: triple.predicate.value, type: triple.predicate.termType });
-        subNode.children.push(objNode);
+        // in this way from multiple same-direction edges between nodes, only one will be taken into account for computing the longest path
+        // opposite-direction edges between same nodes lead to not-well defined behaviour as the alreadyOnPath-stopper kicks in, but not well defined TODO
+        if (!subNode.children.includes(objNode)) {
+            subNode.children.push(objNode);
+        }
     });
     return { prefixes: queryJson.prefixes, nodes: nodes, edges: edges };
 };
@@ -112,6 +116,8 @@ const updateLanguageEditor = (queryStr, graph) => {
         }
     }
 
+    let longestPath = findLongestPath(graph.nodes);
+
     // TODO
     // setEditorValue(value);
 };
@@ -123,6 +129,29 @@ const setWord = entity => {
     }
     entity.word = value;
     entity.wordNormal = value.replace(/([A-Z])/g, " $1").toLowerCase(); // via stackoverflow.com/a/7225450/2474159
+};
+
+const findLongestPath = nodes => {
+    let allPathsFromAllNodes = [];
+    Object.values(nodes).forEach(node => {
+        let allPathsFromThisNode = [];
+        walkFromHere(node, [], allPathsFromThisNode);
+        allPathsFromAllNodes.push.apply(allPathsFromAllNodes, allPathsFromThisNode);
+    });
+    return allPathsFromAllNodes.reduce((prev, current) => {
+        return (prev.length > current.length) ? prev : current
+    });
+};
+
+
+const walkFromHere = (node, path, allPaths) => {
+    let alreadyOnPath = path.includes(node.value);
+    path.push(node.value);
+    if (alreadyOnPath || node.children.length === 0) {
+        allPaths.push(path);
+        return;
+    }
+    node.children.forEach(child => walkFromHere(child, path.slice(0), allPaths));
 };
 
 const addSharingType = (tripleA, tripleB, idxA, idxB, type) => {
