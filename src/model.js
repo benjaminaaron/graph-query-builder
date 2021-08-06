@@ -23,7 +23,7 @@ const initModel = () => {
         "  ?sub :isA :Human ;\n" +
         "  \t:livesIn ?obj .\n" +
         "  ?obj :isA :city ;\n" +
-        "  \t:locatedIn :Germany .\n" +
+        "  \t:isLocatedIn :Germany .\n" +
         "}";
     setSparqlQuery(query);
 };
@@ -94,7 +94,7 @@ const buildQueryFromGraph = data => {
 };
 
 const updateLanguageEditor = (queryStr, graph) => {
-    let queryJson = parser.parse(queryStr);
+    /*let queryJson = parser.parse(queryStr);
     let triples = queryJson.where[0].triples;
     triples.forEach(triple => triple.sharing = {});
 
@@ -116,21 +116,33 @@ const updateLanguageEditor = (queryStr, graph) => {
             if (subSame && !predSame && objSame) addSharingType(tripleA, tripleB, a, b,"subObj");
             if (!subSame && predSame && objSame) addSharingType(tripleA, tripleB, a, b,"predObj");
         }
-    }
+    }*/
 
     let longestPath = findLongestPath(graph);
 
-    // TODO
-    // setEditorValue(value);
+    let sentence = "";
+    for (let i = 0; i < longestPath.length; i++) {
+        let element = longestPath[i];
+        setWord(element); // deduplicate with triples above TODO
+        sentence += " " + element.wordNormal;
+        if (i === 2) {
+            sentence += ", that";
+        }
+    }
+    sentence = sentence.substr(1) + ".";
+    setEditorValue(sentence);
 };
 
 const setWord = entity => {
     let value = entity.value;
-    if (entity.termType === "NamedNode") {
+    if (entity.type === "NamedNode") {
         value = extractWordFromUri(value);
     }
     entity.word = value;
-    entity.wordNormal = value.replace(/([A-Z])/g, " $1").toLowerCase(); // via stackoverflow.com/a/7225450/2474159
+    entity.wordNormal = value.replace(/([A-Z])/g, " $1").toLowerCase().trim(); // via stackoverflow.com/a/7225450/2474159
+    if (entity.type === "Variable") {
+        entity.wordNormal = "<" + entity.wordNormal + ">";
+    }
 };
 
 const findLongestPath = graph => {
