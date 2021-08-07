@@ -150,10 +150,23 @@ const updateLanguageEditor = (queryStr, graph) => {
     sentence = sentence.substr(1) + ".";
 
     let keywords = { NamedNode: [], Variable: [], Literal: [] };
-    Object.values(graph.nodes).filter(node => node.wordNormal).forEach(node => keywords[node.type].push(node.wordNormal));
-    graph.edges.filter(edge => edge.wordNormal).forEach(edge => keywords[edge.type].push(edge.wordNormal));
+    Object.values(graph.nodes).filter(node => node.wordNormal).forEach(node => addKeywords(node, keywords));
+    graph.edges.filter(edge => edge.wordNormal).forEach(edge => addKeywords(edge, keywords));
 
     setEditorValue(sentence, keywords);
+};
+
+const addKeywords = (element, keywords) => {
+    // this is a hack to get the highlighting going in the editor, the proper way would be to get the regex right though
+    if (element.type === "Variable") {
+        keywords.Variable.push(element.word);
+        return;
+    }
+    let words = element.wordNormal.split(" ");
+    if (words.length > 1) {
+        words.forEach(word => keywords[element.type].push(word));
+    }
+    keywords[element.type].push(element.wordNormal);
 };
 
 const isSideBranch = (longestPath, testPath) => {
