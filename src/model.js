@@ -71,7 +71,7 @@ const buildGraphFromQuery = queryStr => {
 const addOrGetNode = (nodes, tripleEntity) => {
     let value = tripleEntity.value;
     if (!nodes[value]) {
-        nodes[value] = { id: Object.keys(nodes).length, value: value, type: tripleEntity.termType, children: [] };
+        nodes[value] = { id: Object.keys(nodes).length, value: value, type: tripleEntity.termType, children: [], paths: [] };
     }
     return nodes[value];
 };
@@ -149,7 +149,7 @@ const findLongestPath = graph => {
     let allPathsFromAllNodes = [];
     Object.values(graph.nodes).forEach(node => {
         let allPathsFromThisNode = [];
-        walkFromHere(node, [], allPathsFromThisNode);
+        walkFromHere(node, [], allPathsFromThisNode, graph.nodes);
         allPathsFromAllNodes.push.apply(allPathsFromAllNodes, allPathsFromThisNode);
     });
     let longestPath = allPathsFromAllNodes.reduce((prev, current) => {
@@ -167,14 +167,17 @@ const findLongestPath = graph => {
 };
 
 
-const walkFromHere = (node, path, allPaths) => {
+const walkFromHere = (node, path, allPaths, nodes) => {
     let alreadyOnPath = path.includes(node.value);
     path.push(node.value);
     if (alreadyOnPath || node.children.length === 0) {
         allPaths.push(path);
+        if (path.length > 1) { // that's only the root node then
+            nodes[path[0]].paths.push(path.slice(1));
+        }
         return;
     }
-    node.children.forEach(child => walkFromHere(child, path.slice(0), allPaths));
+    node.children.forEach(child => walkFromHere(child, path.slice(0), allPaths, nodes));
 };
 
 const addSharingType = (tripleA, tripleB, idxA, idxB, type) => {
