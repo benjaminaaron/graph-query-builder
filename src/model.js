@@ -18,13 +18,21 @@ const initModel = () => {
     onValidGraphChange(data => acceptingChanges && translateToOtherDomains(Domain.GRAPH, data));
     onEditorChange(data => acceptingChanges && translateToOtherDomains(Domain.LANGUAGE, data));
 
-    let query = "PREFIX : <http://onto.de/default#>\n" +
+    /*let query = "PREFIX : <http://onto.de/default#>\n" +
         "SELECT * WHERE {\n" +
         "  ?sub :isA :Human ;\n" +
         "  \t:livesIn ?obj ;\n" +
         "  \t:likes :iceCream .\n" +
         "  ?obj :isA :city ;\n" +
         "  \t:isLocatedIn :Germany .\n" +
+        "}";*/
+    let query = "PREFIX : <http://onto.de/default#> \n" +
+        "CONSTRUCT { \n" +
+        "  ?person :livesIn ?location . \n" +
+        "} WHERE { \n" +
+        "    ?person :isA :Human . \n" +
+        "    ?person :rents ?rentingObject . \n" +
+        "    ?rentingObject :locatedIn ?location . \n" +
         "}";
     setSparqlQuery(query);
 };
@@ -52,11 +60,25 @@ const translateToOtherDomains = (sourceDomain, data) => {
 
 const buildGraphFromQuery = queryStr => {
     let queryJson = parser.parse(queryStr);
-    let edges = [];
     let nodes = {};
-    let queryType = queryJson.queryType;
-    let variables = queryJson.variables.map(varObj => varObj.value);
-    queryJson.where[0].triples.forEach(triple => {
+    let edges = [];
+    parseTriples(queryJson.where[0].triples, nodes, edges);
+
+    switch (queryJson.queryType) {
+        case "SELECT":
+            let variables = queryJson.variables.map(varObj => varObj.value);
+            // TODO
+            break;
+        case "CONSTRUCT":
+            parseTriples(queryJson.template, nodes, edges);
+            break;
+    }
+
+    return { prefixes: queryJson.prefixes, nodes: nodes, edges: edges };
+};
+
+const parseTriples = (triplesJson, nodes, edges) => {
+    triplesJson.forEach(triple => {
         let subNode = addOrGetNode(nodes, triple.subject);
         let objNode = addOrGetNode(nodes, triple.object);
         edges.push({ id: edges.length, source: subNode.id, target: objNode.id, value: triple.predicate.value, type: triple.predicate.termType });
@@ -66,7 +88,6 @@ const buildGraphFromQuery = queryStr => {
             subNode.children.push(objNode);
         }
     });
-    return { prefixes: queryJson.prefixes, nodes: nodes, edges: edges };
 };
 
 const addOrGetNode = (nodes, tripleEntity) => {
@@ -95,8 +116,12 @@ const buildQueryFromGraph = data => {
 };
 
 const updateLanguageEditor = (queryStr, graph) => {
-    /*let queryJson = parser.parse(queryStr);
-    let triples = queryJson.where[0].triples;
+    let queryJson = parser.parse(queryStr);
+    if (queryJson.queryType !== "SELECT") {
+        setEditorValue("Only simple SELECT queries are supported for now");
+        return;
+    }
+    /*let triples = queryJson.where[0].triples;
     triples.forEach(triple => triple.sharing = {});
 
     for (let a = 0; a < triples.length; a ++) {

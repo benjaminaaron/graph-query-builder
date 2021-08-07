@@ -51,7 +51,7 @@ const parseSentences = () => {
     return sentences;
 };
 
-const setEditorValue = (value, _keywords) => {
+const setEditorValue = (value, _keywords = { NamedNode: [], Variable: [], Literal: [] }) => {
     keywords = _keywords;
     editor.setValue(value);
 };
