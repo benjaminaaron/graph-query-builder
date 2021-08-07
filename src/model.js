@@ -123,12 +123,13 @@ const updateLanguageEditor = (queryStr, graph) => {
     let longestPath = expandNodeKeysToFullPath(longestPathNodeKeys, graph);
 
     let sentence = "";
+    let branchCount;
     for (let i = 0; i < longestPath.length; i++) {
         let element = longestPath[i];
         setWord(element); // deduplicate with triples above TODO
         sentence += " " + element.wordNormal;
         // only nodes have paths
-        let branchCount = 0;
+        branchCount = 0;
         element.paths && element.paths.filter(path => isSideBranch(longestPathNodeKeys, path)).forEach(path => {
             let expandedPath = expandNodeKeysToFullPath(path, graph);
             // console.log(element.value, " --> ", expandedPath);
@@ -147,7 +148,12 @@ const updateLanguageEditor = (queryStr, graph) => {
         }
     }
     sentence = sentence.substr(1) + ".";
-    setEditorValue(sentence);
+
+    let keywords = { NamedNode: [], Variable: [], Literal: [] };
+    Object.values(graph.nodes).filter(node => node.wordNormal).forEach(node => keywords[node.type].push(node.wordNormal));
+    graph.edges.filter(edge => edge.wordNormal).forEach(edge => keywords[edge.type].push(edge.wordNormal));
+
+    setEditorValue(sentence, keywords);
 };
 
 const isSideBranch = (longestPath, testPath) => {

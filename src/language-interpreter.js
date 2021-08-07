@@ -2,13 +2,19 @@ import CodeMirror from "codemirror";
 import {} from "codemirror/addon/mode/simple";
 
 let editor;
-let termTypeHolders = ["text", "line"];
+let keywords = { NamedNode: [], Variable: [], Literal: [] };
 
 CodeMirror.defineSimpleMode("sparqlTermTypes", {
     start: [{
         regex: /\w+/, token: match => {
-            if (termTypeHolders.includes(match[0].toLowerCase())) {
-                return 'termTypeHolder';
+            if (keywords.NamedNode.includes(match[0].toLowerCase())) {
+                return 'namedNodeShort';
+            }
+            if (keywords.Variable.includes(match[0].toLowerCase())) {
+                return 'variable';
+            }
+            if (keywords.Literal.includes(match[0].toLowerCase())) {
+                return 'literal';
             }
             return 'word'
         }}]
@@ -45,7 +51,8 @@ const parseSentences = () => {
     return sentences;
 };
 
-const setEditorValue = value => {
+const setEditorValue = (value, _keywords) => {
+    keywords = _keywords;
     editor.setValue(value);
 };
 

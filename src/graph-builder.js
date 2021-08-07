@@ -247,17 +247,18 @@ const initGraphBuilder = config => {
 const getColorForType = type => {
     switch (type) {
         case 'NamedNode':
-          return '#337a4d';
-        case 'Literal':
-          return '#912419';
-        case 'IN_DRAGGING':
-          return 'orange';
+            return '#e9591e';
         case 'Variable':
+            return '#1d158b';
+        case 'Literal':
+            return '#912419';
+        case 'IN_DRAGGING':
+            return 'orange';
         default:
-          return 'rgba(31, 120, 180, 0.92)';
+            return 'rgba(31, 120, 180, 0.92)';
     }
     // ForceGraph default colors: edge = rgba(255,255,255,0.2), node = rgba(31, 120, 180, 0.92)
-    // Yasgui editor colors: NamedNode #337a4d, Literal #912419, Variable #1d158b, curly brackets: #4aae23 (selected, otherwise black), keywords: #62167a
+    // Yasgui editor colors: NamedNode full #337a4d, NamedNode short #e9591e, Literal #912419, Variable #1d158b, curly brackets: #4aae23 (selected, otherwise black), keywords: #62167a
 };
 
 const graphChanged = () => {
