@@ -21,7 +21,8 @@ const initModel = () => {
     let query = "PREFIX : <http://onto.de/default#>\n" +
         "SELECT * WHERE {\n" +
         "  ?sub :isA :Human ;\n" +
-        "  \t:livesIn ?obj .\n" +
+        "  \t:livesIn ?obj ;\n" +
+        "  \t:likes :iceCream .\n" +
         "  ?obj :isA :city ;\n" +
         "  \t:isLocatedIn :Germany .\n" +
         "}";
@@ -126,14 +127,24 @@ const updateLanguageEditor = (queryStr, graph) => {
         let element = longestPath[i];
         setWord(element); // deduplicate with triples above TODO
         sentence += " " + element.wordNormal;
-        if ((i + 1) % 3 === 0) {
-            sentence += ", that";
-        }
-        if (!element.paths) continue; // only nodes have paths
-        element.paths.filter(path => isSideBranch(longestPathNodeKeys, path)).forEach(path => {
+        // only nodes have paths
+        let branchCount = 0;
+        element.paths && element.paths.filter(path => isSideBranch(longestPathNodeKeys, path)).forEach(path => {
             let expandedPath = expandNodeKeysToFullPath(path, graph);
-            console.log(element.value, " --> ", expandedPath);
+            // console.log(element.value, " --> ", expandedPath);
+            sentence += branchCount === 0 ? ", which" : " and";
+            for (let j = 1; j < expandedPath.length; j++) {
+                let branchElement = expandedPath[j];
+                setWord(branchElement);
+                sentence += " " + branchElement.wordNormal;
+            }
+            branchCount ++;
         });
+        if ((i + 1) % 3 === 0) {
+            sentence += " that";
+        } else if (branchCount > 0) {
+            sentence += ",";
+        }
     }
     sentence = sentence.substr(1) + ".";
     setEditorValue(sentence);
