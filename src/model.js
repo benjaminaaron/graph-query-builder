@@ -129,9 +129,23 @@ const updateLanguageEditor = (queryStr, graph) => {
         if ((i + 1) % 3 === 0) {
             sentence += ", that";
         }
+        if (!element.paths) continue; // only nodes have paths
+        element.paths.filter(path => isSideBranch(longestPathNodeKeys, path)).forEach(path => {
+            let expandedPath = expandNodeKeysToFullPath(path, graph);
+            console.log(element.value, " --> ", expandedPath);
+        });
     }
     sentence = sentence.substr(1) + ".";
     setEditorValue(sentence);
+};
+
+const isSideBranch = (longestPath, testPath) => {
+    for (let i = 0; i < longestPath.length; i++) {
+        if (longestPath[i] === testPath[0]) {
+            return longestPath[i + 1] !== testPath[1];
+        }
+    }
+    return true;
 };
 
 const setWord = entity => {
@@ -176,7 +190,7 @@ const walkFromHere = (node, path, allPaths, nodes) => {
     if (alreadyOnPath || node.children.length === 0) {
         allPaths.push(path);
         if (path.length > 1) { // that's only the root node then
-            nodes[path[0]].paths.push(path.slice(1));
+            nodes[path[0]].paths.push(path);
         }
         return;
     }
