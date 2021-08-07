@@ -118,14 +118,15 @@ const updateLanguageEditor = (queryStr, graph) => {
         }
     }*/
 
-    let longestPath = findLongestPath(graph);
+    let longestPathNodeKeys = findLongestPath(graph);
+    let longestPath = expandNodeKeysToFullPath(longestPathNodeKeys, graph);
 
     let sentence = "";
     for (let i = 0; i < longestPath.length; i++) {
         let element = longestPath[i];
         setWord(element); // deduplicate with triples above TODO
         sentence += " " + element.wordNormal;
-        if (i === 2) {
+        if ((i + 1) % 3 === 0) {
             sentence += ", that";
         }
     }
@@ -152,20 +153,22 @@ const findLongestPath = graph => {
         walkFromHere(node, [], allPathsFromThisNode, graph.nodes);
         allPathsFromAllNodes.push.apply(allPathsFromAllNodes, allPathsFromThisNode);
     });
-    let longestPath = allPathsFromAllNodes.reduce((prev, current) => {
+    return allPathsFromAllNodes.reduce((prev, current) => {
         return (prev.length > current.length) ? prev : current
     });
-    let path = [graph.nodes[longestPath[0]]];
-    for (let i = 0; i < longestPath.length - 1; i++) {
-        let node = graph.nodes[longestPath[i]];
-        let nextNode = graph.nodes[longestPath[i + 1]];
+};
+
+const expandNodeKeysToFullPath = (pathNodeKeys, graph) => {
+    let path = [graph.nodes[pathNodeKeys[0]]];
+    for (let i = 0; i < pathNodeKeys.length - 1; i++) {
+        let node = graph.nodes[pathNodeKeys[i]];
+        let nextNode = graph.nodes[pathNodeKeys[i + 1]];
         let edgeBetween = graph.edges.filter(edge => edge.source === node.id && edge.target === nextNode.id)[0];
         path.push(edgeBetween);
         path.push(nextNode);
     }
     return path;
 };
-
 
 const walkFromHere = (node, path, allPaths, nodes) => {
     let alreadyOnPath = path.includes(node.value);
