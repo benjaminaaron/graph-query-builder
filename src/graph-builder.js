@@ -119,10 +119,17 @@ const distance = (node1, node2) => {
     return Math.sqrt(Math.pow(node1.x - node2.x, 2) + Math.pow(node1.y - node2.y, 2));
 };
 
-const getInput = (nodeOrEdge, type, callUpdates = true) => {
-    let input = prompt('Set a value for this ' + type + ':', nodeOrEdge.label);
-    if (!input) {
-        return false;
+const getInput = (nodeOrEdge, isNode, callUpdates = true) => {
+    let input = prompt('Set a value for this ' + (isNode ? 'node' : 'edge') + ':', nodeOrEdge.label);
+    if (!input) return false;
+    if (EntityType.LITERAL === determineTypeFromInput(input)) {
+        if (!isNode) {
+            alert("Predicates (edges) can't be literals");
+            return false;
+        } else if (edges.filter(edge => edge.source === nodeOrEdge).length > 0) {
+            alert("Subjects (nodes with outgoing edges) can't be literals");
+            return false;
+        }
     }
     if (!prefixCreatedIfUnknownShortFormUsed(input)) {
         return false;
@@ -183,7 +190,7 @@ const initGraphBuilder = config => {
         })
         .onNodeDragEnd(() => {
             dragSourceNode = null;
-            if (interimEdge && !getInput(interimEdge, "edge")) {
+            if (interimEdge && !getInput(interimEdge, false)) {
                 removeEdge(interimEdge);
             }
             interimEdge = null;
@@ -191,9 +198,9 @@ const initGraphBuilder = config => {
         })
         .linkColor(edge => getColorForType(edge.type))
         .linkLineDash(edge => edge === interimEdge ? [2, 2] : [])
-        .onNodeClick((node, event) => getInput(node, 'node'))
+        .onNodeClick((node, event) => getInput(node, true))
         .onNodeRightClick((node, event) => removeNode(node))
-        .onLinkClick((edge, event) => getInput(edge, 'edge'))
+        .onLinkClick((edge, event) => getInput(edge, false))
         .onLinkRightClick((edge, event) => {
             removeEdge(edge);
             graphChanged();
@@ -202,7 +209,7 @@ const initGraphBuilder = config => {
             let coords = graph.screen2GraphCoords(event.layerX, event.layerY);
             let nodeId = nodeIdCounter ++;
             let node = { id: nodeId, x: coords.x, y: coords.y, label: '?var' + nodeId };
-            if (getInput(node, "node", false)) {
+            if (getInput(node, true, false)) {
                 nodes.push(node);
                 update();
             }
