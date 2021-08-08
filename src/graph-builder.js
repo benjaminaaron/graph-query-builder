@@ -131,6 +131,10 @@ const getInput = (nodeOrEdge, isNode, callUpdates = true) => {
             return false;
         }
     }
+    if (!isNode && nodeOrEdge.source.type === "Literal") {
+        alert("This would turn the literal-node \"" + nodeOrEdge.source.label + "\" into a subject, and subjects can't be literals");
+        return false;
+    }
     if (!prefixCreatedIfUnknownShortFormUsed(input)) {
         return false;
     }
