@@ -45,7 +45,7 @@ const translateToOtherDomains = (sourceDomain, data) => {
             updateLanguageEditor(data, graph);
             // by sending it to graph builder, source/target of edges will be the node objects instead of
             // just their ids, plus a few more things from the force-graph library
-            setGraphBuilderData(graph.prefixes, Object.values(graph.nodes), graph.edges);
+            setGraphBuilderData(graph);
             break;
         case Domain.GRAPH:
             buildQueryFromGraph(data);

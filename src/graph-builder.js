@@ -10,10 +10,10 @@ let dragSourceNode = null, interimEdge = null;
 const SNAP_IN_DISTANCE = 15;
 const SNAP_OUT_DISTANCE = 40;
 
-const setGraphBuilderData = (_prefixes, _nodes, _edges) => {
-    nodes = _nodes;
-    edges = _edges;
-    prefixes = _prefixes;
+const setGraphBuilderData = graphData => {
+    nodes = Object.values(graphData.nodes);
+    edges = graphData.edges;
+    prefixes = graphData.prefixes;
     nodes.forEach(node => interpretFromModel(node));
     edges.forEach(edge => interpretFromModel(edge));
     nodeIdCounter = nodes.length;
@@ -204,6 +204,11 @@ const initGraphBuilder = config => {
             ctx.fillStyle = getColorForType(node === dragSourceNode || (interimEdge && (node === interimEdge.source || node === interimEdge.target)) ? 'IN_DRAGGING' : node.type);
             // ctx.fillRect(node.x - rectDim[0] / 2, node.y - rectDim[1] / 2, ...rectDim);
             roundedRect(node.x - rectDim[0] / 2, node.y - rectDim[1] / 2, rectDim[0], rectDim[1], 20, ctx);
+            if (node.isNewInConstruct) {
+                ctx.lineWidth = "4";
+                ctx.strokeStyle = "yellow";
+                ctx.stroke(); // roundedRect outline
+            }
             ctx.fill(); // roundedRect background
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
@@ -235,8 +240,13 @@ const initGraphBuilder = config => {
             ctx.save();
             ctx.translate(textPos.x, textPos.y);
             ctx.rotate(textAngle);
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-            ctx.fillRect(- rectDim[0] / 2, - rectDim[1] / 2, ...rectDim);
+            if (edge.isNewInConstruct) {
+                ctx.fillStyle = 'yellow';
+            } else {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            }
+            ctx.fillRect(- rectDim[0] / 2, - rectDim[1] / 2, ...rectDim)
+            // ctx.strokeRect(- rectDim[0] / 2, - rectDim[1] / 2, ...rectDim);
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillStyle = getColorForType(edge.type);
