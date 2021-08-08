@@ -120,7 +120,13 @@ const distance = (node1, node2) => {
 };
 
 const getInput = (nodeOrEdge, isNode, callUpdates = true) => {
-    let input = prompt('Set a value for this ' + (isNode ? 'node' : 'edge') + ':', nodeOrEdge.label);
+    let input = prompt('Set a value for this ' + (isNode ? 'node' : 'edge') + ':', (nodeOrEdge.isNewInConstruct ? '+' : '') + nodeOrEdge.label);
+    let isNewInConstruct = false;
+    if (input.startsWith("+")) {
+        isNewInConstruct = true;
+        input = input.substr(1);
+    }
+    input = input.trim();
     if (!input) return false;
     if (EntityType.LITERAL === determineTypeFromInput(input)) {
         if (!isNode) {
@@ -139,6 +145,7 @@ const getInput = (nodeOrEdge, isNode, callUpdates = true) => {
         return false;
     }
     interpretInput(nodeOrEdge, input);
+    nodeOrEdge.isNewInConstruct = isNewInConstruct; // also need to be able to turn it off in another rename
     if (callUpdates) {
         graphChanged();
         update();
