@@ -63,7 +63,6 @@ const buildGraphFromQuery = queryStr => {
     let nodes = {};
     let edges = {};
     parseTriples(queryJson.where[0].triples, nodes, edges, false);
-
     switch (queryJson.queryType) {
         case "SELECT":
             let variables = queryJson.variables.map(varObj => varObj.value);
@@ -73,7 +72,6 @@ const buildGraphFromQuery = queryStr => {
             parseTriples(queryJson.template, nodes, edges, true);
             break;
     }
-
     return { prefixes: queryJson.prefixes, nodes: nodes, edges: Object.values(edges) };
 };
 
@@ -109,19 +107,24 @@ const addOrGetEdge = (edges, predicate, subNodeId, objNodeId, markNew) => {
 };
 
 const buildQueryFromGraph = data => {
+    let isConstructQuery = data.constructTriples.length > 0;
     let queryJson = {
         prefixes: data.prefixes,
-        queryType: "SELECT",
+        queryType: isConstructQuery ? "CONSTRUCT" : "SELECT",
         type: "query",
-        variables: [{
-            termType: "Wildcard",
-            value: "*"
-        }],
         where: [{
             type: "bgp",
-            triples: data.triples
+            triples: data.whereTriples
         }]
     };
+    if (isConstructQuery) {
+        queryJson.template = data.constructTriples;
+    } else {
+        queryJson.variables = [{
+            termType: "Wildcard",
+            value: "*"
+        }];
+    }
     setSparqlQuery(generator.stringify(queryJson));
 };
 
@@ -153,7 +156,7 @@ const updateLanguageEditor = (queryStr, graph) => {
             }
             branchCount ++;
         });
-        if ((i + 1) % 3 === 0) {
+        if ((i + 1) % 3 === 0) { // TODO not if "that" would be the very end of the sentence
             sentence += " that";
         } else if (branchCount > 0) {
             sentence += ",";

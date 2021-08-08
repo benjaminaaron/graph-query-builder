@@ -319,9 +319,10 @@ const graphChanged = () => {
     if (!graphChangeCallback) {
         return;
     }
-    let triples = [];
+    let whereTriples = [];
+    let constructTriples = [];
     edges.forEach(edge => {
-        triples.push({
+        (edge.isNewInConstruct || edge.source.isNewInConstruct || edge.target.isNewInConstruct ? constructTriples : whereTriples).push({
             subject: {
                 termType: edge.source.type,
                 value: edge.source.value
@@ -341,7 +342,7 @@ const graphChanged = () => {
     // let allShortFormLabels = new Set(nodes.map(node => node.label).concat(edges.map(edge => edge.label))
     //    .filter(label => !label.startsWith("http") && label.includes(":")).map(shortLabel => shortLabel.split(":")[0]));
     // let unusedPrefixKeys = Object.keys(prefixes).filter(key => !allShortFormLabels.has(key));
-    graphChangeCallback({ prefixes: prefixes, triples: triples });
+    graphChangeCallback({ prefixes: prefixes, whereTriples: whereTriples, constructTriples: constructTriples });
 };
 
 let graphChangeCallback;
