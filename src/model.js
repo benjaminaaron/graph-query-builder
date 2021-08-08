@@ -61,8 +61,8 @@ const translateToOtherDomains = (sourceDomain, data) => {
 const buildGraphFromQuery = queryStr => {
     let queryJson = parser.parse(queryStr);
     let nodes = {};
-    let edges = [];
-    parseTriples(queryJson.where[0].triples, nodes, edges);
+    let edges = {};
+    parseTriples(queryJson.where[0].triples, nodes, edges, false);
 
     switch (queryJson.queryType) {
         case "SELECT":
@@ -70,18 +70,18 @@ const buildGraphFromQuery = queryStr => {
             // TODO
             break;
         case "CONSTRUCT":
-            parseTriples(queryJson.template, nodes, edges);
+            parseTriples(queryJson.template, nodes, edges, true);
             break;
     }
 
-    return { prefixes: queryJson.prefixes, nodes: nodes, edges: edges };
+    return { prefixes: queryJson.prefixes, nodes: nodes, edges: Object.values(edges) };
 };
 
-const parseTriples = (triplesJson, nodes, edges) => {
+const parseTriples = (triplesJson, nodes, edges, markNew) => {
     triplesJson.forEach(triple => {
-        let subNode = addOrGetNode(nodes, triple.subject);
-        let objNode = addOrGetNode(nodes, triple.object);
-        edges.push({ id: edges.length, source: subNode.id, target: objNode.id, value: triple.predicate.value, type: triple.predicate.termType });
+        let subNode = addOrGetNode(nodes, triple.subject, markNew);
+        let objNode = addOrGetNode(nodes, triple.object, markNew);
+        let edge = addOrGetEdge(edges, triple.predicate, subNode.id, objNode.id, markNew);
         // in this way from multiple same-direction edges between nodes, only one will be taken into account for computing the longest path
         // opposite-direction edges between same nodes lead to not-well defined behaviour as the alreadyOnPath-stopper kicks in, but not well defined TODO
         if (!subNode.children.includes(objNode)) {
@@ -90,12 +90,22 @@ const parseTriples = (triplesJson, nodes, edges) => {
     });
 };
 
-const addOrGetNode = (nodes, tripleEntity) => {
-    let value = tripleEntity.value;
+const addOrGetNode = (nodes, subOrObj, markNew) => {
+    let value = subOrObj.value;
     if (!nodes[value]) {
-        nodes[value] = { id: Object.keys(nodes).length, value: value, type: tripleEntity.termType, children: [], paths: [] };
+        nodes[value] = { id: Object.keys(nodes).length, value: value, type: subOrObj.termType, children: [], paths: [] };
+        if (markNew) nodes[value].isNewInConstruct = true;
     }
     return nodes[value];
+};
+
+const addOrGetEdge = (edges, predicate, subNodeId, objNodeId, markNew) => {
+    let value = predicate.value;
+    if (!edges[value]) {
+        edges[value] = { id: Object.keys(edges).length, source: subNodeId, target: objNodeId, value: value, type: predicate.termType };
+        if (markNew) edges[value].isNewInConstruct = true;
+    }
+    return edges[value];
 };
 
 const buildQueryFromGraph = data => {
@@ -121,7 +131,7 @@ const updateLanguageEditor = (queryStr, graph) => {
         return;
     }
 
-    let longestPathNodeKeys = findLongestPath(graph);
+    let longestPathNodeKeys = findLongestPath(graph.nodes);
     let longestPath = expandNodeKeysToFullPath(longestPathNodeKeys, graph);
 
     let sentence = "";
@@ -192,11 +202,11 @@ const setWord = entity => {
     }
 };
 
-const findLongestPath = graph => {
+const findLongestPath = nodes => {
     let allPathsFromAllNodes = [];
-    Object.values(graph.nodes).forEach(node => {
+    Object.values(nodes).forEach(node => {
         let allPathsFromThisNode = [];
-        walkFromHere(node, [], allPathsFromThisNode, graph.nodes);
+        walkFromHere(node, [], allPathsFromThisNode, nodes);
         allPathsFromAllNodes.push.apply(allPathsFromAllNodes, allPathsFromThisNode);
     });
     return allPathsFromAllNodes.reduce((prev, current) => {
