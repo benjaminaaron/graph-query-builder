@@ -9,6 +9,9 @@ let prefixes = {};
 let dragSourceNode = null, interimEdge = null;
 const SNAP_IN_DISTANCE = 15;
 const SNAP_OUT_DISTANCE = 40;
+const EntityType = {
+    VARIABLE: 1, NAMED_NODE_SHORT: 2, NAMED_NODE: 3, LITERAL: 4
+};
 
 const setGraphBuilderData = graphData => {
     nodes = Object.values(graphData.nodes);
@@ -53,34 +56,42 @@ const expandShortForm = shortForm => {
     return baseUri + (baseUri.endsWith("#") || baseUri.endsWith("/") ? "" : "#") + shortForm.split(':')[1];
 };
 
-const interpretInput = (nodeOrEdge, input) => {
-    if (input.startsWith("?")) {
-        nodeOrEdge.type = "Variable";
-        nodeOrEdge.value = input.substr(1);
-        nodeOrEdge.label = input;
-        nodeOrEdge.tooltip = null;
-        return nodeOrEdge;
-    }
-    if (input.startsWith("http")) {
-        nodeOrEdge.type = "NamedNode";
-        nodeOrEdge.value = input;
-        nodeOrEdge.label = buildShortFormIfPrefixExists(input);
-        nodeOrEdge.tooltip = input;
-        return nodeOrEdge;
-    }
-    if (input.includes(":")) {
-        nodeOrEdge.type = "NamedNode";
-        let fullUri = expandShortForm(input);
-        nodeOrEdge.value = fullUri;
-        nodeOrEdge.label = input;
-        nodeOrEdge.tooltip = fullUri;
-        return nodeOrEdge;
-    }
+const determineTypeFromInput = input => {
+    if (input.startsWith("?")) return EntityType.VARIABLE;
+    if (input.startsWith("http")) return EntityType.NAMED_NODE;
+    if (input.includes(":")) return EntityType.NAMED_NODE_SHORT;
     // if we reach here, it must be a Literal
-    nodeOrEdge.type = "Literal";
-    nodeOrEdge.value = input;
-    nodeOrEdge.label = input;
-    nodeOrEdge.tooltip = null;
+    return EntityType.LITERAL;
+};
+
+const interpretInput = (nodeOrEdge, input) => {
+    switch (determineTypeFromInput(input)) {
+        case EntityType.VARIABLE:
+            nodeOrEdge.type = "Variable";
+            nodeOrEdge.value = input.substr(1);
+            nodeOrEdge.label = input;
+            nodeOrEdge.tooltip = null;
+            break;
+        case EntityType.NAMED_NODE_SHORT:
+            nodeOrEdge.type = "NamedNode";
+            let fullUri = expandShortForm(input);
+            nodeOrEdge.value = fullUri;
+            nodeOrEdge.label = input;
+            nodeOrEdge.tooltip = fullUri;
+            break;
+        case EntityType.NAMED_NODE:
+            nodeOrEdge.type = "NamedNode";
+            nodeOrEdge.value = input;
+            nodeOrEdge.label = buildShortFormIfPrefixExists(input);
+            nodeOrEdge.tooltip = input;
+            break;
+        case EntityType.LITERAL:
+            nodeOrEdge.type = "Literal";
+            nodeOrEdge.value = input;
+            nodeOrEdge.label = input;
+            nodeOrEdge.tooltip = null;
+            break;
+    }
     return nodeOrEdge;
 };
 
