@@ -39,40 +39,41 @@ const initModel = () => {
 
 const translateToOtherDomains = (sourceDomain, data) => {
     acceptingChanges = false;
+    let sparqlModel, graphData;
     switch (sourceDomain) {
         case Domain.SPARQL:
-            let graph = buildGraphFromQuery(data);
-            updateLanguageEditor(data, graph);
-            // by sending it to graph builder, source/target of edges will be the node objects instead of
-            // just their ids, plus a few more things from the force-graph library
-            setGraphBuilderData(graph);
+            sparqlModel = parser.parse(data);
+            graphData = buildGraphDataFromSparqlModel(sparqlModel);
+            updateLanguageEditor(graphData);
+            setGraphBuilderData(graphData); // edge.source/target will be made the node objects instead of just ids
             break;
         case Domain.GRAPH:
-            buildQueryFromGraph(data);
-            setEditorValue("new value from GRAPH");
+            sparqlModel = constructSparqlModelFromGraphBuilderData(data);
+            setSparqlQuery(generator.stringify(sparqlModel));
+            graphData = buildGraphDataFromSparqlModel(sparqlModel);
+            updateLanguageEditor(graphData);
             break;
         case Domain.LANGUAGE:
-            console.log("New value from editor to SPARQL and GRAPH: ", data);
+            // not supported (yet)
             break;
     }
     acceptingChanges = true;
 };
 
-const buildGraphFromQuery = queryStr => {
-    let queryJson = parser.parse(queryStr);
+const buildGraphDataFromSparqlModel = sparqlModel => {
     let nodes = {};
     let edges = {};
-    parseTriples(queryJson.where[0].triples, nodes, edges, false);
-    switch (queryJson.queryType) {
+    parseTriples(sparqlModel.where[0].triples, nodes, edges, false);
+    switch (sparqlModel.queryType) {
         case "SELECT":
-            let variables = queryJson.variables.map(varObj => varObj.value);
+            let variables = sparqlModel.variables.map(varObj => varObj.value);
             // TODO
             break;
         case "CONSTRUCT":
-            parseTriples(queryJson.template, nodes, edges, true);
+            parseTriples(sparqlModel.template, nodes, edges, true);
             break;
     }
-    return { prefixes: queryJson.prefixes, nodes: nodes, edges: Object.values(edges) };
+    return { prefixes: sparqlModel.prefixes, nodes: nodes, edges: Object.values(edges) };
 };
 
 const parseTriples = (triplesJson, nodes, edges, markNew) => {
@@ -106,9 +107,9 @@ const addOrGetEdge = (edges, predicate, subNodeId, objNodeId, markNew) => {
     return edges[value];
 };
 
-const buildQueryFromGraph = data => {
+const constructSparqlModelFromGraphBuilderData = data => {
     let isConstructQuery = data.constructTriples.length > 0;
-    let queryJson = {
+    let constructedSparqlModel = {
         prefixes: data.prefixes,
         queryType: isConstructQuery ? "CONSTRUCT" : "SELECT",
         type: "query",
@@ -118,24 +119,19 @@ const buildQueryFromGraph = data => {
         }]
     };
     if (isConstructQuery) {
-        queryJson.template = data.constructTriples;
+        constructedSparqlModel.template = data.constructTriples;
     } else {
-        queryJson.variables = [{
+        constructedSparqlModel.variables = [{
             termType: "Wildcard",
             value: "*"
         }];
     }
-    setSparqlQuery(generator.stringify(queryJson));
+    return constructedSparqlModel;
 };
 
-const updateLanguageEditor = (queryStr, graph) => {
-    if (parser.parse(queryStr).queryType !== "SELECT") {
-        setEditorValue("Only simple SELECT queries are supported for now");
-        return;
-    }
-
-    let longestPathNodeKeys = findLongestPath(graph.nodes);
-    let longestPath = expandNodeKeysToFullPath(longestPathNodeKeys, graph);
+const updateLanguageEditor = graphData => {
+    let longestPathNodeKeys = findLongestPath(graphData.nodes);
+    let longestPath = expandNodeKeysToFullPath(longestPathNodeKeys, graphData);
 
     let sentence = "";
     let branchCount;
@@ -146,7 +142,7 @@ const updateLanguageEditor = (queryStr, graph) => {
         // only nodes have paths
         branchCount = 0;
         element.paths && element.paths.filter(path => isSideBranch(longestPathNodeKeys, path)).forEach(path => {
-            let expandedPath = expandNodeKeysToFullPath(path, graph);
+            let expandedPath = expandNodeKeysToFullPath(path, graphData);
             // console.log(element.value, " --> ", expandedPath);
             sentence += branchCount === 0 ? ", which" : " and";
             for (let j = 1; j < expandedPath.length; j++) {
@@ -165,8 +161,8 @@ const updateLanguageEditor = (queryStr, graph) => {
     sentence = sentence.substr(1) + ".";
 
     let keywords = { NamedNode: [], Variable: [], Literal: [] };
-    Object.values(graph.nodes).filter(node => node.wordNormal).forEach(node => addKeywords(node, keywords));
-    graph.edges.filter(edge => edge.wordNormal).forEach(edge => addKeywords(edge, keywords));
+    Object.values(graphData.nodes).filter(node => node.wordNormal).forEach(node => addKeywords(node, keywords));
+    graphData.edges.filter(edge => edge.wordNormal).forEach(edge => addKeywords(edge, keywords));
 
     setEditorValue(sentence, keywords);
 };
