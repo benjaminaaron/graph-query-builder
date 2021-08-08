@@ -76,7 +76,7 @@ const buildGraphFromQuery = queryStr => {
 };
 
 const parseTriples = (triplesJson, nodes, edges, markNew) => {
-    triplesJson.forEach(triple => {
+    triplesJson && triplesJson.forEach(triple => {
         let subNode = addOrGetNode(nodes, triple.subject, markNew);
         let objNode = addOrGetNode(nodes, triple.object, markNew);
         let edge = addOrGetEdge(edges, triple.predicate, subNode.id, objNode.id, markNew);
