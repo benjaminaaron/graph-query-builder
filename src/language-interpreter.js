@@ -25,7 +25,7 @@ const initLanguageInterpreter = config => {
     editor = CodeMirror(config.div, {
         value: "some text in line one.\none some text in the second line.",
         mode:  "sparqlTermTypes",
-        readOnly: "nocursor",
+        readOnly: true,
         lineWrapping: true
     });
 };
@@ -57,7 +57,12 @@ const setEditorValue = (value, _keywords = { NamedNode: [], Variable: [], Litera
 };
 
 const onEditorChange = onChange => {
-    editor.on("change", () => onChange(parseSentences()));
+    // editor.on("change", () => onChange(parseSentences()));
+    editor.on("keyup", (obj, event) => {
+        if (event.key !== "Enter") {
+            alert("Translating the natural language domain to the SPARQL and graph domain is not supported yet... or ever. Quite tough to get this right I imagine :)")
+        }
+    });
 };
 
 export { initLanguageInterpreter, onEditorChange, setEditorValue }
