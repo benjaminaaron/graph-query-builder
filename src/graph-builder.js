@@ -200,9 +200,11 @@ const initGraphBuilder = config => {
             const fontSize = 14 / globalScale;
             ctx.font = `${fontSize}px Sans-Serif`;
             const textWidth = ctx.measureText(node.label).width;
-            const rectDim = [textWidth, fontSize].map(n => n + fontSize * 0.8); // padding
+            const rectDim = [textWidth, fontSize].map(n => n + fontSize * 1.1); // padding
             ctx.fillStyle = getColorForType(node === dragSourceNode || (interimEdge && (node === interimEdge.source || node === interimEdge.target)) ? 'IN_DRAGGING' : node.type);
-            ctx.fillRect(node.x - rectDim[0] / 2, node.y - rectDim[1] / 2, ...rectDim);
+            // ctx.fillRect(node.x - rectDim[0] / 2, node.y - rectDim[1] / 2, ...rectDim);
+            roundedRect(node.x - rectDim[0] / 2, node.y - rectDim[1] / 2, rectDim[0], rectDim[1], 20, ctx);
+            ctx.fill(); // roundedRect background
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillStyle = 'white';
@@ -242,6 +244,19 @@ const initGraphBuilder = config => {
             ctx.restore();
         });
     update();
+};
+
+const roundedRect = (x, y, w, h, r, ctx) => {
+    // from stackoverflow.com/a/7838871/2474159
+    if (w < 2 * r) r = w / 2;
+    if (h < 2 * r) r = h / 2;
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
 };
 
 const getColorForType = type => {
