@@ -116,33 +116,10 @@ const buildQueryFromGraph = data => {
 };
 
 const updateLanguageEditor = (queryStr, graph) => {
-    let queryJson = parser.parse(queryStr);
-    if (queryJson.queryType !== "SELECT") {
+    if (parser.parse(queryStr).queryType !== "SELECT") {
         setEditorValue("Only simple SELECT queries are supported for now");
         return;
     }
-    /*let triples = queryJson.where[0].triples;
-    triples.forEach(triple => triple.sharing = {});
-
-    for (let a = 0; a < triples.length; a ++) {
-        let tripleA = triples[a];
-        setWord(tripleA.subject);
-        setWord(tripleA.predicate);
-        setWord(tripleA.object);
-        for (let b = a + 1; b < triples.length; b ++) {
-            let tripleB = triples[b];
-            let subSame = tripleA.subject.value === tripleB.subject.value;
-            let predSame = tripleA.predicate.value === tripleB.predicate.value;
-            let objSame = tripleA.object.value === tripleB.object.value;
-                // && tripleA.object.termType !== "Literal" && tripleB.object.termType !== "Literal";
-            if (subSame && !predSame && !objSame) addSharingType(tripleA, tripleB, a, b,"sub");
-            if (!subSame && predSame && !objSame) addSharingType(tripleA, tripleB, a, b,"pred");
-            if (!subSame && !predSame && objSame) addSharingType(tripleA, tripleB, a, b,"obj");
-            if (subSame && predSame && !objSame) addSharingType(tripleA, tripleB, a, b,"subPred");
-            if (subSame && !predSame && objSame) addSharingType(tripleA, tripleB, a, b,"subObj");
-            if (!subSame && predSame && objSame) addSharingType(tripleA, tripleB, a, b,"predObj");
-        }
-    }*/
 
     let longestPathNodeKeys = findLongestPath(graph);
     let longestPath = expandNodeKeysToFullPath(longestPathNodeKeys, graph);
@@ -151,7 +128,7 @@ const updateLanguageEditor = (queryStr, graph) => {
     let branchCount;
     for (let i = 0; i < longestPath.length; i++) {
         let element = longestPath[i];
-        setWord(element); // deduplicate with triples above TODO
+        setWord(element);
         sentence += " " + element.wordNormal;
         // only nodes have paths
         branchCount = 0;
@@ -250,13 +227,6 @@ const walkFromHere = (node, path, allPaths, nodes) => {
         return;
     }
     node.children.forEach(child => walkFromHere(child, path.slice(0), allPaths, nodes));
-};
-
-const addSharingType = (tripleA, tripleB, idxA, idxB, type) => {
-    if (!tripleA.sharing[type]) tripleA.sharing[type] = [];
-    if (!tripleB.sharing[type]) tripleB.sharing[type] = [];
-    tripleA.sharing[type].push(idxB);
-    tripleB.sharing[type].push(idxA);
 };
 
 export { initModel }
