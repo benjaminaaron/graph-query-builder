@@ -122,13 +122,13 @@ const distance = (node1, node2) => {
 
 const getInput = (nodeOrEdge, isNode, callUpdates = true) => {
     let input = prompt('Set a value for this ' + (isNode ? 'node' : 'edge') + ':', (nodeOrEdge.isNewInConstruct ? '+' : '') + nodeOrEdge.label);
+    if (!input) return false;
     let isNewInConstruct = false;
     if (input.startsWith("+")) {
         isNewInConstruct = true;
         input = input.substr(1);
     }
-    input = input.trim();
-    if (!input) return false;
+    if (!input.trim()) return false;
     if (EntityType.LITERAL === determineTypeFromInput(input)) {
         if (!isNode) {
             alert("Predicates (edges) can't be literals");
