@@ -12,6 +12,7 @@ const SNAP_OUT_DISTANCE = 40;
 const EntityType = {
     VARIABLE: 1, NAMED_NODE_SHORT: 2, NAMED_NODE: 3, LITERAL: 4
 };
+const FONT_SIZE = 16;
 
 const setGraphBuilderData = graphData => {
     nodes = Object.values(graphData.nodes);
@@ -226,7 +227,7 @@ const initGraphBuilder = config => {
             }
         })
         .nodeCanvasObject((node, ctx, globalScale) => {
-            const fontSize = 14 / globalScale;
+            const fontSize = FONT_SIZE / globalScale;
             ctx.font = `${fontSize}px Sans-Serif`;
             const textWidth = ctx.measureText(node.label).width;
             const rectDim = [textWidth, fontSize].map(n => n + fontSize * 1.1); // padding
@@ -245,11 +246,10 @@ const initGraphBuilder = config => {
             ctx.fillText(node.label, node.x, node.y + fontSize * 0.1); // corrective factor to move text down a tiny bit within the rectangle
         })
         .linkCanvasObjectMode(() => 'after')
-        .linkCanvasObject((edge, ctx) => {
+        .linkCanvasObject((edge, ctx, globalScale) => {
             const start = edge.source;
             const end = edge.target;
             if (edge === interimEdge || typeof start !== 'object' || typeof end !== 'object') return;
-            const MAX_FONT_SIZE = 4;
             const LABEL_NODE_MARGIN = graph.nodeRelSize() * 1.5;
             // calculate label positioning
             const textPos = Object.assign(...['x', 'y'].map(c => ({ [c]: start[c] + (end[c] - start[c]) / 2 }))); // calc middle point
@@ -259,9 +259,7 @@ const initGraphBuilder = config => {
             // maintain label vertical orientation for legibility
             if (textAngle > Math.PI / 2) textAngle = - (Math.PI - textAngle);
             if (textAngle < - Math.PI / 2) textAngle = - (- Math.PI - textAngle);
-            // estimate fontSize to fit in link length
-            ctx.font = '1px Sans-Serif';
-            const fontSize = Math.min(MAX_FONT_SIZE, maxTextLength / ctx.measureText(edge.label).width);
+            const fontSize = FONT_SIZE / globalScale;
             ctx.font = `${fontSize}px Sans-Serif`;
             const textWidth = ctx.measureText(edge.label).width;
             const rectDim = [textWidth, fontSize].map(n => n + fontSize * 0.8); // padding
