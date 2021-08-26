@@ -235,8 +235,8 @@ const initGraphBuilder = config => {
             // ctx.fillRect(node.x - rectDim[0] / 2, node.y - rectDim[1] / 2, ...rectDim);
             roundedRect(node.x - rectDim[0] / 2, node.y - rectDim[1] / 2, rectDim[0], rectDim[1], 20, ctx);
             if (node.isNewInConstruct) {
-                ctx.lineWidth = "4";
-                ctx.strokeStyle = "yellow";
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = 'yellow';
                 ctx.stroke(); // roundedRect outline
             }
             ctx.fill(); // roundedRect background
@@ -247,14 +247,12 @@ const initGraphBuilder = config => {
         })
         .linkCanvasObjectMode(() => 'after')
         .linkCanvasObject((edge, ctx, globalScale) => {
-            const start = edge.source;
-            const end = edge.target;
-            if (edge === interimEdge || typeof start !== 'object' || typeof end !== 'object') return;
-            const LABEL_NODE_MARGIN = graph.nodeRelSize() * 1.5;
+            const source = edge.source;
+            const target = edge.target;
+            if (edge === interimEdge) return;
             // calculate label positioning
-            const textPos = Object.assign(...['x', 'y'].map(c => ({ [c]: start[c] + (end[c] - start[c]) / 2 }))); // calc middle point
-            const relLink = { x: end.x - start.x, y: end.y - start.y };
-            const maxTextLength = Math.sqrt(Math.pow(relLink.x, 2) + Math.pow(relLink.y, 2)) - LABEL_NODE_MARGIN * 2;
+            const textPos = Object.assign(...['x', 'y'].map(c => ({ [c]: source[c] + (target[c] - source[c]) / 2 }))); // calc middle point
+            const relLink = { x: target.x - source.x, y: target.y - source.y };
             let textAngle = Math.atan2(relLink.y, relLink.x);
             // maintain label vertical orientation for legibility
             if (textAngle > Math.PI / 2) textAngle = - (Math.PI - textAngle);
@@ -267,11 +265,7 @@ const initGraphBuilder = config => {
             ctx.save();
             ctx.translate(textPos.x, textPos.y);
             ctx.rotate(textAngle);
-            if (edge.isNewInConstruct) {
-                ctx.fillStyle = 'yellow';
-            } else {
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-            }
+            ctx.fillStyle = edge.isNewInConstruct ? 'yellow' : 'rgba(255, 255, 255, 0.8)';
             ctx.fillRect(- rectDim[0] / 2, - rectDim[1] / 2, ...rectDim)
             // ctx.strokeRect(- rectDim[0] / 2, - rectDim[1] / 2, ...rectDim);
             ctx.textAlign = 'center';
