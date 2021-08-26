@@ -133,6 +133,18 @@ const constructSparqlModelFromGraphBuilderData = data => {
 const updateLanguageEditor = graphData => {
     // TODO distinguish SELECT and CONTRIBUTE queries:
     // treat nodes/edges separate in CONTRIBUTE case and append something like: "For matching items we insert..."
+
+    let whereSentence = buildSentence(graphData);
+    let constructSentence = "";
+    let fullContent = whereSentence + constructSentence; // TODO
+
+    let keywords = { NamedNode: [], Variable: [], Literal: [] };
+    Object.values(graphData.nodes).filter(node => node.wordNormal).forEach(node => addKeywords(node, keywords));
+    graphData.edges.filter(edge => edge.wordNormal).forEach(edge => addKeywords(edge, keywords));
+    setEditorValue(fullContent, keywords);
+};
+
+const buildSentence = graphData => {
     let longestPathNodeKeys = findLongestPath(graphData.nodes);
     let longestPath = expandNodeKeysToFullPath(longestPathNodeKeys, graphData);
     let sentence = "";
@@ -157,11 +169,7 @@ const updateLanguageEditor = graphData => {
             sentence += ",";
         }
     }
-    sentence = sentence.substr(1) + ".";
-    let keywords = { NamedNode: [], Variable: [], Literal: [] };
-    Object.values(graphData.nodes).filter(node => node.wordNormal).forEach(node => addKeywords(node, keywords));
-    graphData.edges.filter(edge => edge.wordNormal).forEach(edge => addKeywords(edge, keywords));
-    setEditorValue(sentence, keywords);
+    return sentence.substr(1) + ".";
 };
 
 const addKeywords = (element, keywords) => {
