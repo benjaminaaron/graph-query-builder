@@ -28,11 +28,12 @@ const initModel = () => {
         "}";*/
     let query = "PREFIX : <http://onto.de/default#> \n" +
         "CONSTRUCT { \n" +
-        "  ?person :livesIn ?location . \n" +
+        "  ?someone :livesIn ?location . \n" +
         "} WHERE { \n" +
-        "    ?person :isA :Human . \n" +
-        "    ?person :rents ?rentingObject . \n" +
-        "    ?rentingObject :locatedIn ?location . \n" +
+        "    ?someone :isA :Human . \n" +
+        "    ?someone :likes :iceCream . \n" +
+        "    ?someone :rentsA ?flat . \n" +
+        "    ?flat :isLocatedIn ?location . \n" +
         "}";
     setSparqlQuery(query);
 };
