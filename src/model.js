@@ -44,15 +44,13 @@ const translateToOtherDomains = (sourceDomain, data) => {
     switch (sourceDomain) {
         case Domain.SPARQL:
             sparqlModel = parser.parse(data);
-            graphData = buildGraphDataFromSparqlModel(sparqlModel);
-            updateLanguageEditor(graphData);
-            setGraphBuilderData(graphData); // edge.source/target will be made the node objects instead of just ids
+            updateLanguageEditor(sparqlModel);
+            setGraphBuilderData(extractTriplesFromQuery(sparqlModel, true, true)); // edge.source/target will be made the node objects instead of just ids
             break;
         case Domain.GRAPH:
             sparqlModel = constructSparqlModelFromGraphBuilderData(data);
             setSparqlQuery(generator.stringify(sparqlModel));
-            graphData = buildGraphDataFromSparqlModel(sparqlModel);
-            updateLanguageEditor(graphData);
+            updateLanguageEditor(sparqlModel);
             break;
         case Domain.LANGUAGE:
             // not supported (yet)
@@ -61,20 +59,21 @@ const translateToOtherDomains = (sourceDomain, data) => {
     acceptingChanges = true;
 };
 
-const buildGraphDataFromSparqlModel = sparqlModel => {
+const extractTriplesFromQuery = (sparqlModel, extractFromSelect, extractFromConstruct) => {
     let nodes = {};
     let edges = {};
-    parseTriples(sparqlModel.where[0].triples, nodes, edges, false);
-    switch (sparqlModel.queryType) {
-        case "SELECT":
-            let variables = sparqlModel.variables.map(varObj => varObj.value);
-            // TODO
-            break;
-        case "CONSTRUCT":
-            parseTriples(sparqlModel.template, nodes, edges, true);
-            break;
+    if (extractFromSelect) {
+        parseTriples(sparqlModel.where[0].triples, nodes, edges, false);
+    }
+    if (extractFromConstruct) {
+        parseTriples(sparqlModel.template, nodes, edges, true);
     }
     return { prefixes: sparqlModel.prefixes, nodes: nodes, edges: Object.values(edges) };
+};
+
+const extractTriplesFromBothSelectAndConstructQuery = sparqlModel => {
+    // switch (sparqlModel.queryType) {} SELECT, CONSTRUCT
+    return extractTriplesFromQuery(sparqlModel, true, true);
 };
 
 const parseTriples = (triplesJson, nodes, edges, markNew) => {
@@ -130,17 +129,20 @@ const constructSparqlModelFromGraphBuilderData = data => {
     return constructedSparqlModel;
 };
 
-const updateLanguageEditor = graphData => {
+const updateLanguageEditor = sparqlModel => {
+    let selectGraphData = extractTriplesFromQuery(sparqlModel, true, false);
+
     // TODO distinguish SELECT and CONTRIBUTE queries:
     // treat nodes/edges separate in CONTRIBUTE case and append something like: "For matching items we insert..."
+    //  let constructGraphData = extractTriplesFromQuery(sparqlModel, false, true);
 
-    let whereSentence = buildSentence(graphData);
+    let whereSentence = buildSentence(selectGraphData);
     let constructSentence = "";
     let fullContent = whereSentence + constructSentence; // TODO
 
     let keywords = { NamedNode: [], Variable: [], Literal: [] };
-    Object.values(graphData.nodes).filter(node => node.wordNormal).forEach(node => addKeywords(node, keywords));
-    graphData.edges.filter(edge => edge.wordNormal).forEach(edge => addKeywords(edge, keywords));
+    Object.values(selectGraphData.nodes).filter(node => node.wordNormal).forEach(node => addKeywords(node, keywords));
+    selectGraphData.edges.filter(edge => edge.wordNormal).forEach(edge => addKeywords(edge, keywords));
     setEditorValue(fullContent, keywords);
 };
 
