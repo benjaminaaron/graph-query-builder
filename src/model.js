@@ -130,20 +130,24 @@ const constructSparqlModelFromGraphBuilderData = data => {
 };
 
 const updateLanguageEditor = sparqlModel => {
-    let selectGraphData = extractTriplesFromQuery(sparqlModel, true, false);
-
-    // TODO distinguish SELECT and CONTRIBUTE queries:
-    // treat nodes/edges separate in CONTRIBUTE case and append something like: "For matching items we insert..."
-    //  let constructGraphData = extractTriplesFromQuery(sparqlModel, false, true);
-
-    let whereSentence = buildSentence(selectGraphData);
-    let constructSentence = "";
-    let fullContent = whereSentence + constructSentence; // TODO
-
     let keywords = { NamedNode: [], Variable: [], Literal: [] };
-    Object.values(selectGraphData.nodes).filter(node => node.wordNormal).forEach(node => addKeywords(node, keywords));
-    selectGraphData.edges.filter(edge => edge.wordNormal).forEach(edge => addKeywords(edge, keywords));
+
+    let selectGraphData = extractTriplesFromQuery(sparqlModel, true, false);
+    let fullContent = buildSentence(selectGraphData);
+    extractKeywords(selectGraphData, keywords);
+
+    if (sparqlModel.queryType === "CONSTRUCT") {
+        let constructGraphData = extractTriplesFromQuery(sparqlModel, false, true);
+        fullContent = "From this:\n\n" + fullContent + "\n\nWe infer that:\n\n" + buildSentence(constructGraphData);
+        extractKeywords(constructGraphData, keywords);
+    }
+
     setEditorValue(fullContent, keywords);
+};
+
+const extractKeywords = (graphData, keywords) => {
+    Object.values(graphData.nodes).filter(node => node.wordNormal).forEach(node => addKeywords(node, keywords));
+    graphData.edges.filter(edge => edge.wordNormal).forEach(edge => addKeywords(edge, keywords));
 };
 
 const buildSentence = graphData => {
@@ -165,11 +169,14 @@ const buildSentence = graphData => {
             expandedPath.forEach(branchElement => sentence += " " + branchElement.wordNormal);
             branchCount ++;
         });
-        if ((i + 1) % 3 === 0) { // TODO not if "that" would be the very end of the sentence
+        if ((i + 1) % 3 === 0) {
             sentence += " that";
         } else if (branchCount > 0) {
             sentence += ",";
         }
+    }
+    if (sentence.endsWith(" that")) { // TODO streamline these conditions
+        sentence = sentence.substr(0, sentence.length - " that".length);
     }
     return sentence.substr(1) + ".";
 };
