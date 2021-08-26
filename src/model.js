@@ -143,14 +143,11 @@ const updateLanguageEditor = graphData => {
         // only nodes have paths
         branchCount = 0;
         element.paths && element.paths.filter(path => isSideBranch(longestPathNodeKeys, path)).forEach(path => {
-            let expandedPath = expandNodeKeysToFullPath(path, graphData);
-            // console.log(element.value, " --> ", expandedPath);
-            sentence += branchCount === 0 ? ", which" : " and";
-            for (let j = 1; j < expandedPath.length; j++) {
-                let branchElement = expandedPath[j];
-                setWord(branchElement);
-                sentence += " " + branchElement.wordNormal;
-            }
+            let expandedPath = expandNodeKeysToFullPath(path, graphData).slice(1); // skip the first
+            expandedPath.forEach(branchElement => setWord(branchElement));
+            let subSentenceStarter = ["human", "person"].some(word => expandedPath[1].wordNormal.includes(word)) ? "who" : "which";
+            sentence += branchCount === 0 ? ", " + subSentenceStarter : " and";
+            expandedPath.forEach(branchElement => sentence += " " + branchElement.wordNormal);
             branchCount ++;
         });
         if ((i + 1) % 3 === 0) { // TODO not if "that" would be the very end of the sentence
