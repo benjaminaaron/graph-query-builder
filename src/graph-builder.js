@@ -275,6 +275,7 @@ const initGraphBuilder = config => {
             ctx.restore();
         });
     update();
+    setTimeout(() => graph.zoomToFit(400, 50), 400);
 };
 
 const roundedRect = (x, y, w, h, r, ctx) => {
