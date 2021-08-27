@@ -13,10 +13,12 @@
         }
         #sparqlEditorDiv .CodeMirror {
             font-size: 15px !important;
+            height: 232px !important;
         }
         #languageInterpreterDiv .CodeMirror {
             font-family: "Ubuntu Mono",serif;
             font-size: 18px !important;
+            height: 180px;
         }
         .cm-namedNodeShort {
             color: #e9591e;
@@ -44,18 +46,25 @@
                 <div id="graphBuilderDiv"></div>
             </td>
         </tr>
-        <!--<tr>
+        <tr>
+            <td colspan="2">
+                <div style="display: flex; justify-content: center; padding: 20px">
+                    <button id="submitBtn" type="submit">Submit SPARQL query</button>
+                </div>
+            </td>
+        </tr>
+        <tr>
             <td colspan="2">
                 <div id="graphOutputDiv"></div>
             </td>
-        </tr>-->
+        </tr>
     </table>
     <script>
         init({
             graphBuilder: {
                 div: document.getElementById('graphBuilderDiv'),
-                width: 800,
-                height: 613
+                width: 700,
+                height: 424
             },
             sparqlEditor: {
                 div: document.getElementById('sparqlEditorDiv')
@@ -65,7 +74,7 @@
             },
             graphOutput: {
                 div: document.getElementById('graphOutputDiv'),
-                width: 1414,
+                width: 1314,
                 height: 600
             }
         });
