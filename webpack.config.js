@@ -1,5 +1,6 @@
 const path = require('path');
 const CopyPlugin = require("copy-webpack-plugin");
+const NodePolyfillPlugin = require("node-polyfill-webpack-plugin")
 
 module.exports = {
     entry: './src/index.js',
@@ -18,5 +19,6 @@ module.exports = {
                 },
             ],
         }),
+        new NodePolyfillPlugin() // can this be configured more economically?
     ]
 };

@@ -2,21 +2,32 @@ import { onValidSparqlChange, setSparqlQuery } from './sparql-editor'
 import { setGraphBuilderData, onValidGraphChange } from './graph-builder';
 import { onEditorChange, setEditorValue } from "./language-interpreter";
 import { extractWordFromUri } from "./utils";
+import { SparqlEndpointFetcher } from "fetch-sparql-endpoint";
 
 const SparqlParser = require('sparqljs').Parser;
 const parser = new SparqlParser();
 const SparqlGenerator = require('sparqljs').Generator;
 const generator = new SparqlGenerator({});
+const sparqlEndpointFetcher = new SparqlEndpointFetcher();
+const SPARQL_ENDPOINT = "https://dbpedia.org/sparql";
 
 const Domain = {
     SPARQL: 1, GRAPH: 2, LANGUAGE: 3
 };
 let acceptingChanges = true; // to avoid changes triggering circular onChange-calls
 
-const initModel = () => {
+const initModel = submitButtonId => {
     onValidSparqlChange(data => acceptingChanges && translateToOtherDomains(Domain.SPARQL, data));
     onValidGraphChange(data => acceptingChanges && translateToOtherDomains(Domain.GRAPH, data));
     onEditorChange(data => acceptingChanges && translateToOtherDomains(Domain.LANGUAGE, data));
+
+    if (submitButtonId) {
+        document.getElementById(submitButtonId).addEventListener('click', () => {
+            querySparqlEndpoint("SELECT * WHERE { ?s ?p ?o } LIMIT 5", data => {
+                console.log(data);
+            }).then();
+        });
+    }
 
     /*let query = "PREFIX : <http://onto.de/default#>\n" +
         "SELECT * WHERE {\n" +
@@ -37,6 +48,11 @@ const initModel = () => {
         "}";
     setSparqlQuery(query);
 };
+
+async function querySparqlEndpoint(query, onData) {
+    const bindingsStream = await sparqlEndpointFetcher.fetchBindings(SPARQL_ENDPOINT, query);
+    bindingsStream.on('data', bindings => onData(bindings));
+}
 
 const translateToOtherDomains = (sourceDomain, data) => {
     acceptingChanges = false;
