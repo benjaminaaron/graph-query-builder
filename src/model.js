@@ -27,15 +27,13 @@ const initModel = submitButtonId => {
         });
     }
 
-    /*let query = "PREFIX : <http://onto.de/default#>\n" +
+    let query = "PREFIX : <http://onto.de/default#>\n" +
         "SELECT * WHERE {\n" +
-        "  ?sub :isA :Human ;\n" +
-        "  \t:livesIn ?obj ;\n" +
-        "  \t:likes :iceCream .\n" +
-        "  ?obj :isA :city ;\n" +
-        "  \t:isLocatedIn :Germany .\n" +
-        "}";*/
-    let query = "PREFIX : <http://onto.de/default#> \n" +
+        "  ?someone :isA :Human ;\n" +
+        "  \t:rentsA ?flat .\n" +
+        "  ?flat :isLocatedIn :Hamburg .\n" +
+        "}";
+    /*let query = "PREFIX : <http://onto.de/default#> \n" +
         "CONSTRUCT { \n" +
         "  ?someone :livesIn ?location . \n" +
         "} WHERE { \n" +
@@ -43,7 +41,7 @@ const initModel = submitButtonId => {
         "    ?someone :likes :iceCream . \n" +
         "    ?someone :rentsA ?flat . \n" +
         "    ?flat :isLocatedIn ?location . \n" +
-        "}";
+        "}";*/
     setSparqlQuery(query);
 };
 
