@@ -58,12 +58,14 @@ const submitSparqlQuery = () => {
 
 const fetchAllTriplesFromEndpoint = (prefixes, done) => {
     querySparqlEndpoint("SELECT * WHERE { ?s ?p ?o }", (variables, data) => {
-        console.log("all:", prefixes, variables, data);
-        let graphData = {};
-
-        // TODO
-
-        setGraphOutputData(graphData);
+        let nodes = {};
+        let edges = [];
+        data.forEach(triple => {
+            let subNode = addOrGetNode(nodes, triple.s);
+            let objNode = addOrGetNode(nodes, triple.o);
+            addEdge(edges, triple.p, subNode.id, objNode.id);
+        });
+        setGraphOutputData({ prefixes: prefixes, nodes: nodes, edges: edges });
         done();
     }).then();
 };

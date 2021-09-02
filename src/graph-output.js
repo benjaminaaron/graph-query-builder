@@ -1,11 +1,21 @@
 import { buildGraph, updateGraphData } from './graph-shared';
+import { buildShortFormIfPrefixExists } from "./utils";
 
 let graph;
-let nodeIdCounter = 0, edgeIdCounter = 0;
 let nodes = [], edges = [];
 
 const setGraphOutputData = graphData => {
-    // TODO
+    nodes = Object.values(graphData.nodes);
+    edges = graphData.edges;
+    nodes.forEach(node => setLabelAndTooltip(graphData.prefixes, node));
+    edges.forEach(edge => setLabelAndTooltip(graphData.prefixes, edge));
+    updateGraphData(graph, nodes, edges);
+};
+
+const setLabelAndTooltip = (prefixes, nodeOrEdge) => {
+    let shortForm = buildShortFormIfPrefixExists(prefixes, nodeOrEdge.value);
+    nodeOrEdge.tooltip = shortForm;
+    nodeOrEdge.label = shortForm;
 };
 
 const initGraphOutput = config => {
