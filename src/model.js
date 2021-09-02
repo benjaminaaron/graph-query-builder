@@ -100,21 +100,21 @@ const translateToOtherDomains = (sourceDomain, data) => {
 
 const extractTriplesFromQuery = (sparqlModel, extractFromSelect, extractFromConstruct) => {
     let nodes = {};
-    let edges = {};
+    let edges = [];
     if (extractFromSelect) {
         parseTriples(sparqlModel.where[0].triples, nodes, edges, false);
     }
     if (extractFromConstruct) {
         parseTriples(sparqlModel.template, nodes, edges, true);
     }
-    return { prefixes: sparqlModel.prefixes, nodes: nodes, edges: Object.values(edges) };
+    return { prefixes: sparqlModel.prefixes, nodes: nodes, edges: edges };
 };
 
 const parseTriples = (triplesJson, nodes, edges, markNew) => {
     triplesJson && triplesJson.forEach(triple => {
         let subNode = addOrGetNode(nodes, triple.subject, markNew);
         let objNode = addOrGetNode(nodes, triple.object, markNew);
-        let edge = addOrGetEdge(edges, triple.predicate, subNode.id, objNode.id, markNew);
+        addEdge(edges, triple.predicate, subNode.id, objNode.id, markNew);
         // in this way from multiple same-direction edges between nodes, only one will be taken into account for computing the longest path
         // opposite-direction edges between same nodes lead to not-well defined behaviour as the alreadyOnPath-stopper kicks in, but not well defined TODO
         if (!subNode.children.includes(objNode)) {
@@ -123,7 +123,7 @@ const parseTriples = (triplesJson, nodes, edges, markNew) => {
     });
 };
 
-const addOrGetNode = (nodes, subOrObj, markNew) => {
+const addOrGetNode = (nodes, subOrObj, markNew = false) => {
     let value = subOrObj.value;
     if (!nodes[value]) {
         nodes[value] = { id: Object.keys(nodes).length, value: value, type: subOrObj.termType, children: [], paths: [] };
@@ -132,13 +132,11 @@ const addOrGetNode = (nodes, subOrObj, markNew) => {
     return nodes[value];
 };
 
-const addOrGetEdge = (edges, predicate, subNodeId, objNodeId, markNew) => {
+const addEdge = (edges, predicate, subNodeId, objNodeId, markNew = false) => {
     let value = predicate.value;
-    if (!edges[value]) {
-        edges[value] = { id: Object.keys(edges).length, source: subNodeId, target: objNodeId, value: value, type: predicate.termType };
-        if (markNew) edges[value].isNewInConstruct = true;
-    }
-    return edges[value];
+    let edge = { id: edges.length, source: subNodeId, target: objNodeId, value: value, type: predicate.termType };
+    if (markNew) edge.isNewInConstruct = true;
+    edges.push(edge);
 };
 
 const constructSparqlModelFromGraphBuilderData = data => {
