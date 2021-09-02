@@ -110,11 +110,6 @@ const extractTriplesFromQuery = (sparqlModel, extractFromSelect, extractFromCons
     return { prefixes: sparqlModel.prefixes, nodes: nodes, edges: Object.values(edges) };
 };
 
-const extractTriplesFromBothSelectAndConstructQuery = sparqlModel => {
-    // switch (sparqlModel.queryType) {} SELECT, CONSTRUCT
-    return extractTriplesFromQuery(sparqlModel, true, true);
-};
-
 const parseTriples = (triplesJson, nodes, edges, markNew) => {
     triplesJson && triplesJson.forEach(triple => {
         let subNode = addOrGetNode(nodes, triple.subject, markNew);
