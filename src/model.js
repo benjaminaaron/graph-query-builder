@@ -1,13 +1,14 @@
-import { onValidSparqlChange, setSparqlQuery } from './sparql-editor'
+import { onValidSparqlChange, setSparqlQuery, getQuery } from './sparql-editor'
 import { setGraphBuilderData, onValidGraphChange } from './graph-builder';
 import { onEditorChange, setEditorValue } from "./language-interpreter";
 import { extractWordFromUri } from "./utils";
 import { SparqlEndpointFetcher } from "fetch-sparql-endpoint";
+import { setGraphOutputData } from "./graph-output";
 
 const parser = new require('sparqljs').Parser();
 const generator = new require('sparqljs').Generator();
 const sparqlEndpointFetcher = new SparqlEndpointFetcher();
-const SPARQL_ENDPOINT = "https://dbpedia.org/sparql";
+const SPARQL_ENDPOINT = "http://localhost:7200/repositories/onto-engine";
 
 const Domain = {
     SPARQL: 1, GRAPH: 2, LANGUAGE: 3
@@ -20,11 +21,7 @@ const initModel = submitButtonId => {
     onEditorChange(data => acceptingChanges && translateToOtherDomains(Domain.LANGUAGE, data));
 
     if (submitButtonId) {
-        document.getElementById(submitButtonId).addEventListener('click', () => {
-            querySparqlEndpoint("SELECT * WHERE { ?s ?p ?o } LIMIT 5", data => {
-                console.log(data);
-            }).then();
-        });
+        document.getElementById(submitButtonId).addEventListener('click', () => submitSparqlQuery());
     }
 
     let query = "PREFIX : <http://onto.de/default#>\n" +
@@ -45,9 +42,31 @@ const initModel = submitButtonId => {
     setSparqlQuery(query);
 };
 
+const submitSparqlQuery = () => {
+    fetchAllTriplesFromEndpoint(() => {
+        querySparqlEndpoint(getQuery(), data => {
+            console.log("query result:", data);
+        }).then();
+    });
+};
+
+const fetchAllTriplesFromEndpoint = done => {
+    querySparqlEndpoint("SELECT * WHERE { ?s ?p ?o }", triples => {
+        console.log("all triples:", triples);
+        let graphData = {};
+
+        // TODO
+
+        setGraphOutputData(graphData);
+        done();
+    }).then();
+};
+
 async function querySparqlEndpoint(query, onData) {
     const bindingsStream = await sparqlEndpointFetcher.fetchBindings(SPARQL_ENDPOINT, query);
-    bindingsStream.on('data', bindings => onData(bindings));
+    let data = [];
+    bindingsStream.on('data', bindings => data.push(bindings));
+    bindingsStream.on('end', () => onData(data));
 }
 
 const translateToOtherDomains = (sourceDomain, data) => {
