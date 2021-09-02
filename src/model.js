@@ -10,6 +10,8 @@ const SparqlGenerator = require('sparqljs').Generator;
 const generator = new SparqlGenerator({});
 const sparqlEndpointFetcher = new SparqlEndpointFetcher();
 const SPARQL_ENDPOINT = "https://dbpedia.org/sparql";
+const newEngine = require('@comunica/actor-init-sparql').newEngine;
+const myEngine = newEngine();
 
 const Domain = {
     SPARQL: 1, GRAPH: 2, LANGUAGE: 3
@@ -52,6 +54,21 @@ const initModel = submitButtonId => {
 async function querySparqlEndpoint(query, onData) {
     const bindingsStream = await sparqlEndpointFetcher.fetchBindings(SPARQL_ENDPOINT, query);
     bindingsStream.on('data', bindings => onData(bindings));
+    const result = await myEngine.query(query, {
+        sources: [SPARQL_ENDPOINT],
+    });
+    result.bindingsStream
+        .on('data', binding => {
+            console.log(binding.get('?s').value);
+            console.log(binding.get('?s').termType);
+            console.log(binding.get('?p').value);
+            console.log(binding.get('?o').value);
+            onData(binding);
+        })
+        .on('end', () => {
+            console.log("end")
+        })
+        .on('error', error => {});
 }
 
 const translateToOtherDomains = (sourceDomain, data) => {
