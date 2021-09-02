@@ -1,4 +1,5 @@
 import { buildGraph, updateGraphData } from './graph-shared';
+import { buildShortFormIfPrefixExists } from "./utils";
 
 // possible feature-rich alternative: https://github.com/wbkd/react-flow --> https://www.npmjs.com/package/react-flow-renderer
 
@@ -28,7 +29,7 @@ const setGraphBuilderData = graphData => {
 const interpretFromModel = nodeOrEdge => {
     switch (nodeOrEdge.type) {
         case 'NamedNode':
-            nodeOrEdge.label = buildShortFormIfPrefixExists(nodeOrEdge.value);
+            nodeOrEdge.label = buildShortFormIfPrefixExists(prefixes, nodeOrEdge.value);
             nodeOrEdge.tooltip = nodeOrEdge.value;
             break;
         case 'Literal':
@@ -40,17 +41,7 @@ const interpretFromModel = nodeOrEdge => {
             nodeOrEdge.tooltip = null;
             break;
     }
-};
-
-const buildShortFormIfPrefixExists = fullUri => {
-    let ret = fullUri;
-    Object.entries(prefixes).forEach(([short, uri]) => {
-        if (fullUri.startsWith(uri)) {
-            ret = short + ":" + fullUri.substr(uri.length);
-        }
-    });
-    return ret;
-};
+}
 
 const expandShortForm = shortForm => {
     let baseUri = prefixes[shortForm.split(':')[0]];
@@ -83,7 +74,7 @@ const interpretInput = (nodeOrEdge, input) => {
         case EntityType.NAMED_NODE:
             nodeOrEdge.type = "NamedNode";
             nodeOrEdge.value = input;
-            nodeOrEdge.label = buildShortFormIfPrefixExists(input);
+            nodeOrEdge.label = buildShortFormIfPrefixExists(prefixes, input);
             nodeOrEdge.tooltip = input;
             break;
         case EntityType.LITERAL:
