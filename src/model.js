@@ -4,10 +4,8 @@ import { onEditorChange, setEditorValue } from "./language-interpreter";
 import { extractWordFromUri } from "./utils";
 import { SparqlEndpointFetcher } from "fetch-sparql-endpoint";
 
-const SparqlParser = require('sparqljs').Parser;
-const parser = new SparqlParser();
-const SparqlGenerator = require('sparqljs').Generator;
-const generator = new SparqlGenerator({});
+const parser = new require('sparqljs').Parser();
+const generator = new require('sparqljs').Generator();
 const sparqlEndpointFetcher = new SparqlEndpointFetcher();
 const SPARQL_ENDPOINT = "https://dbpedia.org/sparql";
 
