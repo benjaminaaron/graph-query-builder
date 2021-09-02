@@ -43,16 +43,22 @@ const initModel = submitButtonId => {
 };
 
 const submitSparqlQuery = () => {
-    fetchAllTriplesFromEndpoint(() => {
-        querySparqlEndpoint(getQuery(), data => {
-            console.log("query result:", data);
+    let query = getQuery();
+    let prefixes = parser.parse(query).prefixes
+
+    fetchAllTriplesFromEndpoint(prefixes, () => {
+        querySparqlEndpoint(query, (variables, data) => {
+            console.log("query result:", variables, data);
+
+            // TODO
+            
         }).then();
     });
 };
 
-const fetchAllTriplesFromEndpoint = done => {
-    querySparqlEndpoint("SELECT * WHERE { ?s ?p ?o }", triples => {
-        console.log("all triples:", triples);
+const fetchAllTriplesFromEndpoint = (prefixes, done) => {
+    querySparqlEndpoint("SELECT * WHERE { ?s ?p ?o }", (variables, data) => {
+        console.log("all:", prefixes, variables, data);
         let graphData = {};
 
         // TODO
@@ -62,11 +68,13 @@ const fetchAllTriplesFromEndpoint = done => {
     }).then();
 };
 
-async function querySparqlEndpoint(query, onData) {
+async function querySparqlEndpoint(query, onResults) {
     const bindingsStream = await sparqlEndpointFetcher.fetchBindings(SPARQL_ENDPOINT, query);
+    let variables;
     let data = [];
+    bindingsStream.on('variables', vars => variables = vars);
     bindingsStream.on('data', bindings => data.push(bindings));
-    bindingsStream.on('end', () => onData(data));
+    bindingsStream.on('end', () => onResults(variables, data));
 }
 
 const translateToOtherDomains = (sourceDomain, data) => {
