@@ -1,7 +1,7 @@
 import { onValidSparqlChange, setSparqlQuery, getQuery } from './sparql-editor'
 import { setGraphBuilderData, onValidGraphChange } from './graph-builder';
 import { onEditorChange, setEditorValue } from "./language-interpreter";
-import { extractWordFromUri } from "./utils";
+import { buildShortFormIfPrefixExists, extractWordFromUri} from "./utils";
 import { SparqlEndpointFetcher } from "fetch-sparql-endpoint";
 import { setGraphOutputData } from "./graph-output";
 
@@ -9,20 +9,20 @@ const parser = new require('sparqljs').Parser();
 const generator = new require('sparqljs').Generator();
 const sparqlEndpointFetcher = new SparqlEndpointFetcher();
 const SPARQL_ENDPOINT = "http://localhost:7200/repositories/onto-engine";
+let queryResultsDiv;
 
 const Domain = {
     SPARQL: 1, GRAPH: 2, LANGUAGE: 3
 };
 let acceptingChanges = true; // to avoid changes triggering circular onChange-calls
 
-const initModel = submitButtonId => {
+const initModel = submitQuery => {
     onValidSparqlChange(data => acceptingChanges && translateToOtherDomains(Domain.SPARQL, data));
     onValidGraphChange(data => acceptingChanges && translateToOtherDomains(Domain.GRAPH, data));
     onEditorChange(data => acceptingChanges && translateToOtherDomains(Domain.LANGUAGE, data));
 
-    if (submitButtonId) {
-        document.getElementById(submitButtonId).addEventListener('click', () => submitSparqlQuery());
-    }
+    document.getElementById(submitQuery.submitButtonId).addEventListener('click', () => submitSparqlQuery());
+    queryResultsDiv = submitQuery.queryResultsDiv;
 
     let query = "PREFIX : <http://onto.de/default#>\n" +
         "SELECT * WHERE {\n" +
@@ -49,9 +49,29 @@ const submitSparqlQuery = () => {
     fetchAllTriplesFromEndpoint(prefixes, () => {
         querySparqlEndpoint(query, (variables, data) => {
             console.log("query result:", variables, data);
-
-            // TODO
-            
+            while (queryResultsDiv.firstChild) queryResultsDiv.removeChild(queryResultsDiv.lastChild);
+            let rows = data.length;
+            let cols = variables.length;
+            let table = document.createElement('table');
+            let tr = document.createElement('tr');
+            variables.forEach(col => {
+                let th = document.createElement('th');
+                let text = document.createTextNode(col.value);
+                th.appendChild(text);
+                tr.appendChild(th);
+            });
+            table.appendChild(tr);
+            data.forEach(row => {
+                tr = document.createElement('tr');
+                variables.forEach(col => {
+                    let td = document.createElement('td');
+                    let text = document.createTextNode(buildShortFormIfPrefixExists(prefixes, row[col.value].value));
+                    td.appendChild(text);
+                    tr.appendChild(td);
+                });
+                table.appendChild(tr);
+            });
+            queryResultsDiv.appendChild(table);
         }).then();
     });
 };

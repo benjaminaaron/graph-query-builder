@@ -29,6 +29,9 @@
         .cm-literal {
             color: #912419;
         }
+        #wrapperDiv {
+            display: flex;
+        }
     </style>
 </head>
 <body>
@@ -55,7 +58,10 @@
         </tr>
         <tr>
             <td colspan="2">
-                <div id="graphOutputDiv"></div>
+                <div id="wrapperDiv">
+                    <div id="queryResultsDiv"></div>
+                    <div id="graphOutputDiv"></div>
+                </div>
             </td>
         </tr>
     </table>
@@ -77,7 +83,10 @@
                 width: 1314,
                 height: 600
             },
-            submitButtonId: 'submitBtn'
+            submitQuery: {
+                submitButtonId: 'submitBtn',
+                queryResultsDiv: document.getElementById('queryResultsDiv')
+            }
         });
     </script>
 </body>

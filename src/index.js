@@ -9,5 +9,5 @@ window.init = config => {
     initSparqlEditor(config.sparqlEditor);
     initLanguageInterpreter(config.languageInterpreter);
     initGraphOutput(config.graphOutput);
-    initModel(config.submitButtonId);
+    initModel(config.submitQuery);
 };
