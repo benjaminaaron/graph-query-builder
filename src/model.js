@@ -10,6 +10,7 @@ const generator = new require('sparqljs').Generator();
 const sparqlEndpointFetcher = new SparqlEndpointFetcher();
 const SPARQL_ENDPOINT = "http://localhost:7200/repositories/onto-engine";
 let outputElements;
+let selectedRow = null;
 
 const Domain = {
     SPARQL: 1, GRAPH: 2, LANGUAGE: 3
@@ -48,8 +49,8 @@ const submitSparqlQuery = () => {
     let prefixes = parser.parse(query).prefixes
 
     fetchAllTriplesFromEndpoint(prefixes, () => {
-        querySparqlEndpoint(query, (variables, data) => {
-            console.log("query result:", variables, data);
+        querySparqlEndpoint(query, (variables, rows) => {
+            console.log("query result:", variables, rows);
             let parentEl = outputElements.queryResultsDiv;
             while (parentEl.firstChild) parentEl.removeChild(parentEl.lastChild);
             let table = document.createElement('table');
@@ -62,8 +63,9 @@ const submitSparqlQuery = () => {
                 tr.appendChild(th);
             });
             table.appendChild(tr);
-            data.forEach(row => {
+            rows.forEach(row => {
                 tr = document.createElement('tr');
+                row.tr = tr;
                 variables.forEach(col => {
                     let cell = row[col.value];
                     let td = document.createElement('td');
@@ -71,6 +73,17 @@ const submitSparqlQuery = () => {
                     let text = document.createTextNode(buildShortFormIfPrefixExists(prefixes, cell.value));
                     td.appendChild(text);
                     tr.appendChild(td);
+                });
+                tr.addEventListener("click", () => {
+                    selectedRow && selectedRow.tr.classList.remove("selectedRow");
+                    if (row === selectedRow) {
+                        selectedRow = null;
+                    } else {
+                        selectedRow = row;
+                        row.tr.classList.add("selectedRow");
+                    }
+
+                    // TODO
                 });
                 table.appendChild(tr);
             });
