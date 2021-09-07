@@ -53,10 +53,11 @@ const submitSparqlQuery = () => {
             let rows = data.length;
             let cols = variables.length;
             let table = document.createElement('table');
+            table.setAttribute("id", "queryResultsTable");
             let tr = document.createElement('tr');
             variables.forEach(col => {
                 let th = document.createElement('th');
-                let text = document.createTextNode(col.value);
+                let text = document.createTextNode("?" + col.value);
                 th.appendChild(text);
                 tr.appendChild(th);
             });
@@ -64,8 +65,10 @@ const submitSparqlQuery = () => {
             data.forEach(row => {
                 tr = document.createElement('tr');
                 variables.forEach(col => {
+                    let cell = row[col.value];
                     let td = document.createElement('td');
-                    let text = document.createTextNode(buildShortFormIfPrefixExists(prefixes, row[col.value].value));
+                    td.classList.add(cell.termType);
+                    let text = document.createTextNode(buildShortFormIfPrefixExists(prefixes, cell.value));
                     td.appendChild(text);
                     tr.appendChild(td);
                 });
