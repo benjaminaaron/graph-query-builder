@@ -9,20 +9,20 @@ const parser = new require('sparqljs').Parser();
 const generator = new require('sparqljs').Generator();
 const sparqlEndpointFetcher = new SparqlEndpointFetcher();
 const SPARQL_ENDPOINT = "http://localhost:7200/repositories/onto-engine";
-let queryResultsDiv;
+let outputElements;
 
 const Domain = {
     SPARQL: 1, GRAPH: 2, LANGUAGE: 3
 };
 let acceptingChanges = true; // to avoid changes triggering circular onChange-calls
 
-const initModel = submitQuery => {
+const initModel = _outputElements => {
     onValidSparqlChange(data => acceptingChanges && translateToOtherDomains(Domain.SPARQL, data));
     onValidGraphChange(data => acceptingChanges && translateToOtherDomains(Domain.GRAPH, data));
     onEditorChange(data => acceptingChanges && translateToOtherDomains(Domain.LANGUAGE, data));
 
-    document.getElementById(submitQuery.submitButtonId).addEventListener('click', () => submitSparqlQuery());
-    queryResultsDiv = submitQuery.queryResultsDiv;
+    outputElements = _outputElements;
+    document.getElementById(outputElements.submitButtonId).addEventListener('click', () => submitSparqlQuery());
 
     let query = "PREFIX : <http://onto.de/default#>\n" +
         "SELECT * WHERE {\n" +
@@ -43,15 +43,15 @@ const initModel = submitQuery => {
 };
 
 const submitSparqlQuery = () => {
+    outputElements.outputWrapperDiv.style.display = 'flex';
     let query = getQuery();
     let prefixes = parser.parse(query).prefixes
 
     fetchAllTriplesFromEndpoint(prefixes, () => {
         querySparqlEndpoint(query, (variables, data) => {
             console.log("query result:", variables, data);
-            while (queryResultsDiv.firstChild) queryResultsDiv.removeChild(queryResultsDiv.lastChild);
-            let rows = data.length;
-            let cols = variables.length;
+            let parentEl = outputElements.queryResultsDiv;
+            while (parentEl.firstChild) parentEl.removeChild(parentEl.lastChild);
             let table = document.createElement('table');
             table.setAttribute("id", "queryResultsTable");
             let tr = document.createElement('tr');
@@ -74,7 +74,7 @@ const submitSparqlQuery = () => {
                 });
                 table.appendChild(tr);
             });
-            queryResultsDiv.appendChild(table);
+            parentEl.appendChild(table);
         }).then();
     });
 };

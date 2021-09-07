@@ -29,8 +29,8 @@
         .cm-literal {
             color: #912419;
         }
-        #wrapperDiv {
-            display: flex;
+        #outputWrapperDiv {
+            display: none;
         }
         #queryResultsDiv {
             padding-right: 14px;
@@ -82,7 +82,7 @@
         </tr>
         <tr>
             <td colspan="2">
-                <div id="wrapperDiv">
+                <div id="outputWrapperDiv">
                     <div id="queryResultsDiv"></div>
                     <div id="graphOutputDiv"></div>
                 </div>
@@ -104,11 +104,12 @@
             },
             graphOutput: {
                 div: document.getElementById('graphOutputDiv'),
-                width: 1314,
+                width: 999,
                 height: 600
             },
-            submitQuery: {
+            outputElements: {
                 submitButtonId: 'submitBtn',
+                outputWrapperDiv: document.getElementById('outputWrapperDiv'),
                 queryResultsDiv: document.getElementById('queryResultsDiv')
             }
         });
