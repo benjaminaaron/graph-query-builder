@@ -1,5 +1,5 @@
-import { buildGraph, updateGraphData } from './graph-shared';
-import { buildShortFormIfPrefixExists } from "./utils";
+import { buildGraph, updateGraphData } from '../graph-shared';
+import { buildShortFormIfPrefixExists } from "../utils";
 
 // possible feature-rich alternative: https://github.com/wbkd/react-flow --> https://www.npmjs.com/package/react-flow-renderer
 

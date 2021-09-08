@@ -1,7 +1,7 @@
-import { initGraphBuilder } from './graph-builder';
-import { initSparqlEditor } from './sparql-editor';
-import { initLanguageInterpreter } from "./language-interpreter";
-import { initGraphOutput } from './graph-output';
+import { initGraphBuilder } from './panels/graph-builder';
+import { initSparqlEditor } from './panels/sparql-editor';
+import { initLanguageInterpreter } from "./panels/language-interpreter";
+import { initGraphOutput } from './panels/graph-output';
 import { initModel } from "./model";
 
 window.init = config => {

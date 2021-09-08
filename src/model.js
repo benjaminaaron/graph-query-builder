@@ -1,8 +1,8 @@
-import { onValidSparqlChange, setSparqlQuery, getQuery } from './sparql-editor'
-import { setGraphBuilderData, onValidGraphChange } from './graph-builder';
-import { onEditorChange, updateLanguageEditor } from "./language-interpreter";
+import { onValidSparqlChange, setSparqlQuery, getQuery } from './panels/sparql-editor'
+import { setGraphBuilderData, onValidGraphChange } from './panels/graph-builder';
+import { onEditorChange, updateLanguageEditor } from "./panels/language-interpreter";
 import { querySparqlEndpoint, fetchAllTriplesFromEndpoint, extractTriplesFromQuery, buildShortFormIfPrefixExists } from "./utils";
-import { setGraphOutputData } from "./graph-output";
+import { setGraphOutputData } from "./panels/graph-output";
 
 const parser = new require('sparqljs').Parser();
 const generator = new require('sparqljs').Generator();

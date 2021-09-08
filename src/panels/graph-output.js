@@ -1,5 +1,5 @@
-import { buildGraph, updateGraphData } from './graph-shared';
-import { buildShortFormIfPrefixExists } from "./utils";
+import { buildGraph, updateGraphData } from '../graph-shared';
+import { buildShortFormIfPrefixExists } from "../utils";
 
 let graph;
 let nodes = [], edges = [];

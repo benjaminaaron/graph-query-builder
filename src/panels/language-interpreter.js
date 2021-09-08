@@ -1,6 +1,6 @@
 import CodeMirror from "codemirror";
 import {} from "codemirror/addon/mode/simple";
-import { extractTriplesFromQuery, extractWordFromUri } from "./utils";
+import { extractTriplesFromQuery, extractWordFromUri } from "../utils";
 
 let editor;
 let keywords = { NamedNode: [], Variable: [], Literal: [] };
