@@ -9,6 +9,7 @@ const parser = new require('sparqljs').Parser();
 const generator = new require('sparqljs').Generator();
 const sparqlEndpointFetcher = new SparqlEndpointFetcher();
 const SPARQL_ENDPOINT = "http://localhost:7200/repositories/onto-engine";
+let currentSparqlModel;
 let outputElements;
 let selectedRow = null;
 
@@ -46,7 +47,7 @@ const initModel = _outputElements => {
 const submitSparqlQuery = () => {
     outputElements.outputWrapperDiv.style.display = 'flex';
     let query = getQuery();
-    let prefixes = parser.parse(query).prefixes
+    let prefixes = currentSparqlModel.prefixes
 
     fetchAllTriplesFromEndpoint(prefixes, () => {
         querySparqlEndpoint(query, (variables, rows) => {
@@ -117,17 +118,16 @@ async function querySparqlEndpoint(query, onResults) {
 
 const translateToOtherDomains = (sourceDomain, data) => {
     acceptingChanges = false;
-    let sparqlModel, graphData;
     switch (sourceDomain) {
         case Domain.SPARQL:
-            sparqlModel = parser.parse(data);
-            updateLanguageEditor(sparqlModel);
-            setGraphBuilderData(extractTriplesFromQuery(sparqlModel, true, true)); // edge.source/target will be made the node objects instead of just ids
+            currentSparqlModel = parser.parse(data);
+            updateLanguageEditor();
+            setGraphBuilderData(extractTriplesFromQuery(true, true)); // edge.source/target will be made the node objects instead of just ids
             break;
         case Domain.GRAPH:
-            sparqlModel = constructSparqlModelFromGraphBuilderData(data);
-            setSparqlQuery(generator.stringify(sparqlModel));
-            updateLanguageEditor(sparqlModel);
+            currentSparqlModel = constructSparqlModelFromGraphBuilderData(data);
+            setSparqlQuery(generator.stringify(currentSparqlModel));
+            updateLanguageEditor();
             break;
         case Domain.LANGUAGE:
             // not supported (yet)
@@ -136,16 +136,16 @@ const translateToOtherDomains = (sourceDomain, data) => {
     acceptingChanges = true;
 };
 
-const extractTriplesFromQuery = (sparqlModel, extractFromSelect, extractFromConstruct) => {
+const extractTriplesFromQuery = (extractFromSelect, extractFromConstruct) => {
     let nodes = {};
     let edges = [];
     if (extractFromSelect) {
-        parseTriples(sparqlModel.where[0].triples, nodes, edges, false);
+        parseTriples(currentSparqlModel.where[0].triples, nodes, edges, false);
     }
     if (extractFromConstruct) {
-        parseTriples(sparqlModel.template, nodes, edges, true);
+        parseTriples(currentSparqlModel.template, nodes, edges, true);
     }
-    return { prefixes: sparqlModel.prefixes, nodes: nodes, edges: edges };
+    return { prefixes: currentSparqlModel.prefixes, nodes: nodes, edges: edges };
 };
 
 const parseTriples = (triplesJson, nodes, edges, markNew) => {
@@ -199,15 +199,15 @@ const constructSparqlModelFromGraphBuilderData = data => {
     return constructedSparqlModel;
 };
 
-const updateLanguageEditor = sparqlModel => {
+const updateLanguageEditor = () => {
     let keywords = { NamedNode: [], Variable: [], Literal: [] };
 
-    let selectGraphData = extractTriplesFromQuery(sparqlModel, true, false);
+    let selectGraphData = extractTriplesFromQuery(true, false);
     let fullContent = buildSentence(selectGraphData);
     extractKeywords(selectGraphData, keywords);
 
-    if (sparqlModel.queryType === "CONSTRUCT") {
-        let constructGraphData = extractTriplesFromQuery(sparqlModel, false, true);
+    if (currentSparqlModel.queryType === "CONSTRUCT") {
+        let constructGraphData = extractTriplesFromQuery(false, true);
         fullContent = "From this:\n\n" + fullContent + "\n\nWe infer that:\n\n" + buildSentence(constructGraphData);
         extractKeywords(constructGraphData, keywords);
     }
