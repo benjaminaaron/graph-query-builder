@@ -25,6 +25,19 @@ const fetchAllTriplesFromEndpoint = (prefixes, done) => {
     }).then();
 };
 
+const extractTriplesFromQuery = (sparqlModel, extractFromSelect, extractFromConstruct) => {
+    let nodes = {};
+    let edges = [];
+    if (extractFromSelect) {
+        parseTriples(sparqlModel.where[0].triples, nodes, edges, false);
+    }
+    if (extractFromConstruct) {
+        parseTriples(sparqlModel.template, nodes, edges, true);
+    }
+    return { prefixes: sparqlModel.prefixes, nodes: nodes, edges: edges };
+};
+
+
 const parseTriples = (triplesJson, nodes, edges, markNew) => {
     triplesJson && triplesJson.forEach(triple => {
         let subNode = addOrGetNode(nodes, triple.subject, markNew);
@@ -72,4 +85,4 @@ const buildShortFormIfPrefixExists = (prefixes, fullUri) => {
     return ret;
 };
 
-export { querySparqlEndpoint, fetchAllTriplesFromEndpoint, parseTriples, extractWordFromUri, buildShortFormIfPrefixExists }
+export { querySparqlEndpoint, fetchAllTriplesFromEndpoint, extractTriplesFromQuery, extractWordFromUri, buildShortFormIfPrefixExists }
