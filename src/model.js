@@ -1,14 +1,11 @@
 import { onValidSparqlChange, setSparqlQuery, getQuery } from './sparql-editor'
 import { setGraphBuilderData, onValidGraphChange } from './graph-builder';
 import { onEditorChange, setEditorValue } from "./language-interpreter";
-import { buildShortFormIfPrefixExists, extractWordFromUri} from "./utils";
-import { SparqlEndpointFetcher } from "fetch-sparql-endpoint";
+import { querySparqlEndpoint, fetchAllTriplesFromEndpoint, parseTriples, extractWordFromUri, buildShortFormIfPrefixExists } from "./utils";
 import { setGraphOutputData } from "./graph-output";
 
 const parser = new require('sparqljs').Parser();
 const generator = new require('sparqljs').Generator();
-const sparqlEndpointFetcher = new SparqlEndpointFetcher();
-const SPARQL_ENDPOINT = "http://localhost:7200/repositories/onto-engine";
 let currentSparqlModel;
 let outputElements;
 let selectedRow = null;
@@ -49,7 +46,8 @@ const submitSparqlQuery = () => {
     let query = getQuery();
     let prefixes = currentSparqlModel.prefixes
 
-    fetchAllTriplesFromEndpoint(prefixes, () => {
+    fetchAllTriplesFromEndpoint(prefixes, graphData => {
+        setGraphOutputData(graphData);
         querySparqlEndpoint(query, (variables, rows) => {
             console.log("query result:", variables, rows);
             let parentEl = outputElements.queryResultsDiv;
@@ -93,29 +91,6 @@ const submitSparqlQuery = () => {
     });
 };
 
-const fetchAllTriplesFromEndpoint = (prefixes, done) => {
-    querySparqlEndpoint("SELECT * WHERE { ?s ?p ?o }", (variables, data) => {
-        let nodes = {};
-        let edges = [];
-        data.forEach(triple => {
-            let subNode = addOrGetNode(nodes, triple.s);
-            let objNode = addOrGetNode(nodes, triple.o);
-            addEdge(edges, triple.p, subNode.id, objNode.id);
-        });
-        setGraphOutputData({ prefixes: prefixes, nodes: nodes, edges: edges });
-        done();
-    }).then();
-};
-
-async function querySparqlEndpoint(query, onResults) {
-    const bindingsStream = await sparqlEndpointFetcher.fetchBindings(SPARQL_ENDPOINT, query);
-    let variables;
-    let data = [];
-    bindingsStream.on('variables', vars => variables = vars);
-    bindingsStream.on('data', bindings => data.push(bindings));
-    bindingsStream.on('end', () => onResults(variables, data));
-}
-
 const translateToOtherDomains = (sourceDomain, data) => {
     acceptingChanges = false;
     switch (sourceDomain) {
@@ -146,35 +121,6 @@ const extractTriplesFromQuery = (extractFromSelect, extractFromConstruct) => {
         parseTriples(currentSparqlModel.template, nodes, edges, true);
     }
     return { prefixes: currentSparqlModel.prefixes, nodes: nodes, edges: edges };
-};
-
-const parseTriples = (triplesJson, nodes, edges, markNew) => {
-    triplesJson && triplesJson.forEach(triple => {
-        let subNode = addOrGetNode(nodes, triple.subject, markNew);
-        let objNode = addOrGetNode(nodes, triple.object, markNew);
-        addEdge(edges, triple.predicate, subNode.id, objNode.id, markNew);
-        // in this way from multiple same-direction edges between nodes, only one will be taken into account for computing the longest path
-        // opposite-direction edges between same nodes lead to not-well defined behaviour as the alreadyOnPath-stopper kicks in, but not well defined TODO
-        if (!subNode.children.includes(objNode)) {
-            subNode.children.push(objNode);
-        }
-    });
-};
-
-const addOrGetNode = (nodes, subOrObj, markNew = false) => {
-    let value = subOrObj.value;
-    if (!nodes[value]) {
-        nodes[value] = { id: Object.keys(nodes).length, value: value, type: subOrObj.termType, children: [], paths: [] };
-        if (markNew) nodes[value].isNewInConstruct = true;
-    }
-    return nodes[value];
-};
-
-const addEdge = (edges, predicate, subNodeId, objNodeId, markNew = false) => {
-    let value = predicate.value;
-    let edge = { id: edges.length, source: subNodeId, target: objNodeId, value: value, type: predicate.termType };
-    if (markNew) edge.isNewInConstruct = true;
-    edges.push(edge);
 };
 
 const constructSparqlModelFromGraphBuilderData = data => {
