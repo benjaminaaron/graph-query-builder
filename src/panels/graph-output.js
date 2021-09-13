@@ -12,6 +12,10 @@ const setGraphOutputData = graphData => {
     updateGraphData(graph, nodes, edges);
 };
 
+const highlightGraphOutputSubset = graphData => {
+    // TODO
+};
+
 const setLabelAndTooltip = (prefixes, nodeOrEdge) => {
     let shortForm = buildShortFormIfPrefixExists(prefixes, nodeOrEdge.value);
     nodeOrEdge.tooltip = shortForm;
@@ -23,4 +27,4 @@ const initGraphOutput = config => {
     updateGraphData(graph, nodes, edges);
 };
 
-export { initGraphOutput, setGraphOutputData }
+export { initGraphOutput, setGraphOutputData, highlightGraphOutputSubset }

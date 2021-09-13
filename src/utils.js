@@ -67,6 +67,12 @@ const addEdge = (edges, predicate, subNodeId, objNodeId, markNew = false) => {
     edges.push(edge);
 };
 
+const insertResultForVariable = (nodeOrEdge, resultRow) => {
+    if (nodeOrEdge.type !== "Variable") return;
+    nodeOrEdge.sparqlResultTermType = resultRow[nodeOrEdge.value].termType;
+    nodeOrEdge.sparqlResultValue = resultRow[nodeOrEdge.value].value;
+};
+
 const extractWordFromUri = uri => {
     if (uri.includes('#')) {
         return uri.split('#')[1];
@@ -85,4 +91,4 @@ const buildShortFormIfPrefixExists = (prefixes, fullUri) => {
     return ret;
 };
 
-export { querySparqlEndpoint, fetchAllTriplesFromEndpoint, extractTriplesFromQuery, extractWordFromUri, buildShortFormIfPrefixExists }
+export { querySparqlEndpoint, fetchAllTriplesFromEndpoint, extractTriplesFromQuery, insertResultForVariable, extractWordFromUri, buildShortFormIfPrefixExists }

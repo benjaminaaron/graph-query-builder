@@ -1,8 +1,8 @@
 import { onValidSparqlChange, setSparqlQuery, getQuery } from './panels/sparql-editor'
 import { setGraphBuilderData, onValidGraphChange } from './panels/graph-builder';
 import { onEditorChange, updateLanguageEditor } from "./panels/language-interpreter";
-import { querySparqlEndpoint, fetchAllTriplesFromEndpoint, extractTriplesFromQuery } from "./utils";
-import { setGraphOutputData } from "./panels/graph-output";
+import { querySparqlEndpoint, fetchAllTriplesFromEndpoint, extractTriplesFromQuery, insertResultForVariable } from "./utils";
+import { highlightGraphOutputSubset, setGraphOutputData } from "./panels/graph-output";
 import { buildTable } from "./panels/results-table";
 
 const parser = new require('sparqljs').Parser();
@@ -51,7 +51,11 @@ const submitSparqlQuery = () => {
         querySparqlEndpoint(getQuery(), (variables, rows) => {
             console.log("query result:", variables, rows);
             buildTable(variables, rows, prefixes, selectedRow => {
-                // TODO
+                let queryGraphData = extractTriplesFromQuery(currentSparqlModel, true, true);
+                Object.keys(queryGraphData.nodes).forEach(key => insertResultForVariable(queryGraphData.nodes[key], selectedRow))
+                queryGraphData.edges.forEach(edge => insertResultForVariable(edge, selectedRow));
+                highlightGraphOutputSubset(queryGraphData);
+                console.log("queryGraphData", queryGraphData);
             });
         }).then();
     });
