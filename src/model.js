@@ -28,6 +28,8 @@ const initModel = _outputElements => {
         "  ?someone :isA :Human ;\n" +
         "  \t:rentsA ?flat .\n" +
         "  ?flat :isLocatedIn :Hamburg .\n" +
+        "  ?someone ?opinion :DowntownAbbey .\n" +
+        "  ?flat :isOnFloor 2 .\n" +
         "}";
     /*let query = "PREFIX : <http://onto.de/default#> \n" +
         "CONSTRUCT { \n" +
@@ -44,8 +46,8 @@ const initModel = _outputElements => {
 const submitSparqlQuery = () => {
     outputElements.outputWrapperDiv.style.display = 'flex';
     let prefixes = currentSparqlModel.prefixes;
-    fetchAllTriplesFromEndpoint(prefixes, graphData => {
-        setGraphOutputData(graphData);
+    fetchAllTriplesFromEndpoint(prefixes, allGraphData => {
+        setGraphOutputData(allGraphData);
         querySparqlEndpoint(getQuery(), (variables, rows) => {
             console.log("query result:", variables, rows);
             buildTable(variables, rows, prefixes, selectedRow => {

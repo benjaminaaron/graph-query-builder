@@ -124,6 +124,7 @@ const setWord = entity => {
         value = extractWordFromUri(value);
     }
     entity.word = value;
+    // TODO for literal strings with spaces, this makes those spaces wider - make sure it's just one space
     entity.wordNormal = value.replace(/([A-Z])/g, " $1").toLowerCase().trim(); // via stackoverflow.com/a/7225450/2474159
     if (entity.type === "Variable") {
         entity.wordNormal = "<" + entity.wordNormal + ">";
