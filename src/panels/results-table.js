@@ -7,7 +7,7 @@ const initResultsTable = config => {
     parentEl = config.queryResultsDiv;
 };
 
-const buildTable = (variables, rows, prefixes) => {
+const buildTable = (variables, rows, prefixes, onRowSelected) => {
     while (parentEl.firstChild) parentEl.removeChild(parentEl.lastChild);
     let table = document.createElement('table');
     table.setAttribute("id", "queryResultsTable");
@@ -38,8 +38,7 @@ const buildTable = (variables, rows, prefixes) => {
                 selectedRow = row;
                 row.tr.classList.add("selectedRow");
             }
-
-            // TODO
+            onRowSelected(selectedRow);
         });
         table.appendChild(tr);
     });

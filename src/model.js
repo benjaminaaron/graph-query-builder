@@ -48,7 +48,9 @@ const submitSparqlQuery = () => {
         setGraphOutputData(graphData);
         querySparqlEndpoint(getQuery(), (variables, rows) => {
             console.log("query result:", variables, rows);
-            buildTable(variables, rows, prefixes);
+            buildTable(variables, rows, prefixes, selectedRow => {
+                // TODO
+            });
         }).then();
     });
 };
