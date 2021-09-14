@@ -1,7 +1,7 @@
 import { onValidSparqlChange, setSparqlQuery, getQuery } from './panels/sparql-editor'
 import { setGraphBuilderData, onValidGraphChange } from './panels/graph-builder';
 import { onEditorChange, updateLanguageEditor } from "./panels/language-interpreter";
-import { querySparqlEndpoint, fetchAllTriplesFromEndpoint, extractTriplesFromQuery, insertResultForVariable } from "./utils";
+import { querySparqlEndpoint, fetchAllTriplesFromEndpoint, extractTriplesFromQuery, insertResultForVariable, orderNodesArray } from "./utils";
 import { highlightGraphOutputSubset, setGraphOutputData } from "./panels/graph-output";
 import { buildTable } from "./panels/results-table";
 
@@ -47,12 +47,14 @@ const submitSparqlQuery = () => {
     outputElements.outputWrapperDiv.style.display = 'flex';
     let prefixes = currentSparqlModel.prefixes;
     fetchAllTriplesFromEndpoint(prefixes, allGraphData => {
+        allGraphData.nodes = orderNodesArray(Object.values(allGraphData.nodes));
         setGraphOutputData(allGraphData);
         querySparqlEndpoint(getQuery(), (variables, rows) => {
             console.log("query result:", variables, rows);
             buildTable(variables, rows, prefixes, selectedRow => {
                 let queryGraphData = extractTriplesFromQuery(currentSparqlModel, true, true);
-                Object.keys(queryGraphData.nodes).forEach(key => insertResultForVariable(queryGraphData.nodes[key], selectedRow))
+                queryGraphData.nodes = orderNodesArray(Object.values(queryGraphData.nodes));
+                queryGraphData.nodes.forEach(node => insertResultForVariable(node, selectedRow))
                 queryGraphData.edges.forEach(edge => insertResultForVariable(edge, selectedRow));
                 highlightGraphOutputSubset(queryGraphData);
                 console.log("queryGraphData", queryGraphData);

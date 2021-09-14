@@ -91,4 +91,13 @@ const buildShortFormIfPrefixExists = (prefixes, fullUri) => {
     return ret;
 };
 
-export { querySparqlEndpoint, fetchAllTriplesFromEndpoint, extractTriplesFromQuery, insertResultForVariable, extractWordFromUri, buildShortFormIfPrefixExists }
+const orderNodesArray = unordered => {
+    // are there less costly ways of doing this?
+    let ordered = [];
+    for (let i = 0; i < unordered.length; i++) {
+        ordered.push(unordered.find(node => node.id === i));
+    }
+    return ordered;
+};
+
+export { querySparqlEndpoint, fetchAllTriplesFromEndpoint, extractTriplesFromQuery, insertResultForVariable, extractWordFromUri, buildShortFormIfPrefixExists, orderNodesArray }

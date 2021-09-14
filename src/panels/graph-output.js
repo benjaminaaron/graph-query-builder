@@ -5,7 +5,7 @@ let graph;
 let nodes = [], edges = [];
 
 const setGraphOutputData = graphData => {
-    nodes = Object.values(graphData.nodes);
+    nodes = graphData.nodes;
     edges = graphData.edges;
     nodes.forEach(node => setLabelAndTooltip(graphData.prefixes, node));
     edges.forEach(edge => setLabelAndTooltip(graphData.prefixes, edge));
