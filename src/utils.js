@@ -69,8 +69,9 @@ const addEdge = (edges, predicate, subNodeId, objNodeId, markNew = false) => {
 
 const insertResultForVariable = (nodeOrEdge, resultRow) => {
     if (nodeOrEdge.type !== "Variable") return;
-    nodeOrEdge.sparqlResultTermType = resultRow[nodeOrEdge.value].termType;
-    nodeOrEdge.sparqlResultValue = resultRow[nodeOrEdge.value].value;
+    nodeOrEdge.type = resultRow[nodeOrEdge.value].termType;
+    nodeOrEdge.value = resultRow[nodeOrEdge.value].value;
+    nodeOrEdge.wasVariable = true;
 };
 
 const extractWordFromUri = uri => {
