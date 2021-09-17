@@ -52,12 +52,15 @@ const submitSparqlQuery = () => {
         querySparqlEndpoint(getQuery(), (variables, rows) => {
             console.log("query result:", variables, rows);
             buildTable(variables, rows, prefixes, selectedRow => {
-                let queryGraphData = extractTriplesFromQuery(currentSparqlModel, true, true);
-                queryGraphData.nodes = orderNodesArray(Object.values(queryGraphData.nodes));
-                queryGraphData.nodes.forEach(node => insertResultForVariable(node, selectedRow))
-                queryGraphData.edges.forEach(edge => insertResultForVariable(edge, selectedRow));
+                let queryGraphData = null;
+                if (selectedRow) {
+                    queryGraphData = extractTriplesFromQuery(currentSparqlModel, true, true);
+                    queryGraphData.nodes = orderNodesArray(Object.values(queryGraphData.nodes));
+                    queryGraphData.nodes.forEach(node => insertResultForVariable(node, selectedRow))
+                    queryGraphData.edges.forEach(edge => insertResultForVariable(edge, selectedRow));
+                    console.log("queryGraphData", queryGraphData);
+                }
                 highlightGraphOutputSubset(queryGraphData);
-                console.log("queryGraphData", queryGraphData);
             });
         }).then();
     });
