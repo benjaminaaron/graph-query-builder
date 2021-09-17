@@ -1,4 +1,4 @@
-import { buildGraph, updateGraphData } from '../graph-shared';
+import { buildGraph, updateGraphData, getColorForType } from '../graph-shared';
 import { buildShortFormIfPrefixExists } from "../utils";
 
 let graph;
@@ -13,27 +13,32 @@ const setGraphOutputData = graphData => {
 };
 
 const highlightGraphOutputSubset = graphData => {
-    let triplesToHighlight = edges.filter(edge => containsSameTriple(edge, graphData));
-
-    // TODO
+    // reset highlighting
+    nodes.forEach(node => node.highlightAsType = null);
+    edges.forEach(edge => edge.highlightAsType = null);
+    if (graphData) {
+        edges.forEach(edge => markForHighlighting(edge, graphData));
+    }
+    graph.graphData({ nodes: nodes, links: edges });
 };
 
-const containsSameTriple = (thisEdge, otherGraphData) => {
+const markForHighlighting = (thisEdge, otherGraphData) => {
     // can this be achieved in a better way?
-    let thisEdgeValue = thisEdge.value;
-    let thisSourceValue = nodes[thisEdge.source.id].value;
-    let thisTargetValue = nodes[thisEdge.target.id].value;
+    let thisSource = nodes[thisEdge.source.id];
+    let thisTarget = nodes[thisEdge.target.id];
     let otherNodes = otherGraphData.nodes;
     let otherEdges = otherGraphData.edges;
     for (let i = 0; i < otherEdges.length; i++) {
-        let otherEdgeValue = otherEdges[i].value;
-        let otherSourceValue = otherNodes[otherEdges[i].source].value;
-        let otherTargetValue = otherNodes[otherEdges[i].target].value;
-        if (thisEdgeValue === otherEdgeValue && thisSourceValue === otherSourceValue && thisTargetValue === otherTargetValue) {
-            return true;
+        let otherEdge = otherEdges[i];
+        let otherSource = otherNodes[otherEdge.source];
+        let otherTarget = otherNodes[otherEdge.target];
+        if (thisEdge.value === otherEdge.value && thisSource.value === otherSource.value && thisTarget.value === otherTarget.value) {
+            thisEdge.highlightAsType = otherEdge.wasVariable ? 'Variable' : otherSource.type;
+            // some nodes will be marked twice like this, but that's ok
+            thisSource.highlightAsType = otherSource.wasVariable ? 'Variable' : otherSource.type;
+            thisTarget.highlightAsType = otherTarget.wasVariable ? 'Variable' : otherTarget.type;
         }
     }
-    return false;
 };
 
 const setLabelAndTooltip = (prefixes, nodeOrEdge) => {
@@ -43,7 +48,9 @@ const setLabelAndTooltip = (prefixes, nodeOrEdge) => {
 };
 
 const initGraphOutput = config => {
-    graph = buildGraph(config);
+    graph = buildGraph(config)
+        .linkColor(edge => edge.highlightAsType ? getColorForType(edge.highlightAsType) : getColorForType())
+        .nodeColor(node => node.highlightAsType ? getColorForType(node.highlightAsType) : getColorForType())
     updateGraphData(graph, nodes, edges);
 };
 
