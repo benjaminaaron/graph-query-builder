@@ -9,11 +9,24 @@ async function querySparqlEndpoint(query, onResults) {
     let data = [];
     bindingsStream.on('variables', vars => variables = vars);
     bindingsStream.on('data', bindings => data.push(bindings));
-    bindingsStream.on('end', () => onResults(variables, data));
+    bindingsStream.on('end', () => {
+        if (doSave) saveData(query, variables, data, "out.json");
+        onResults(variables, data);
+    });
 }
 
+const saveData = (query, variables, data, filename) => {
+    let output = {
+        query: query,
+        variables: variables,
+        data: data
+    };
+    let blob = new Blob([JSON.stringify(output, null, 4)], {type: "application/json;charset=utf-8"});
+    FileSaver.saveAs(blob, filename);
+};
+
 const fetchAllTriplesFromEndpoint = (prefixes, done) => {
-    querySparqlEndpoint("SELECT * WHERE { ?s ?p ?o }", (variables, data) => {
+    querySparqlEndpoint("SELECT * WHERE { ?s ?p ?o }", false, (variables, data) => {
         let nodes = {};
         let edges = [];
         data.forEach(triple => {

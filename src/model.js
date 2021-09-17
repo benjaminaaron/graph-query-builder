@@ -49,7 +49,7 @@ const submitSparqlQuery = () => {
     fetchAllTriplesFromEndpoint(prefixes, allGraphData => {
         allGraphData.nodes = orderNodesArray(Object.values(allGraphData.nodes));
         setGraphOutputData(allGraphData);
-        querySparqlEndpoint(getQuery(), (variables, rows) => {
+        querySparqlEndpoint(getQuery(), false, (variables, rows) => {
             console.log("query result:", variables, rows);
             buildTable(variables, rows, prefixes, selectedRow => {
                 let queryGraphData = null;
