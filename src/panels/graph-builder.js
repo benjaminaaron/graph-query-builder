@@ -111,6 +111,15 @@ const distance = (node1, node2) => {
     return Math.sqrt(Math.pow(node1.x - node2.x, 2) + Math.pow(node1.y - node2.y, 2));
 };
 
+const getNodePosByValue = value => {
+  let node = nodes.find(node => node.value === value);
+  if (!node) return {};
+  return {
+      x: node.x,
+      y: node.y
+  }
+};
+
 const getInput = (nodeOrEdge, isNode, callUpdates = true) => {
     let input = prompt('Set a value for this ' + (isNode ? 'node' : 'edge') + ':', (nodeOrEdge.isNewInConstruct ? '+' : '') + nodeOrEdge.label);
     if (!input) return false;
@@ -318,4 +327,4 @@ const onValidGraphChange = callback => {
     graphChangeCallback = callback;
 };
 
-export { initGraphBuilder, setGraphBuilderData, onValidGraphChange }
+export { initGraphBuilder, setGraphBuilderData, onValidGraphChange, getNodePosByValue }
