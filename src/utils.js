@@ -1,9 +1,19 @@
 import { SparqlEndpointFetcher } from "fetch-sparql-endpoint";
+import allTriplesJson from './data/mock-data/all-triples.json';
+import sparqlResultsJson from './data/mock-data/sparql-results.json';
 
 const sparqlEndpointFetcher = new SparqlEndpointFetcher();
-const SPARQL_ENDPOINT = "http://localhost:7200/repositories/onto-engine";
+const SPARQL_ENDPOINT = null; // "http://localhost:7200/repositories/onto-engine";
 
-async function querySparqlEndpoint(query, onResults) {
+async function querySparqlEndpoint(query, doSave, isAllTriplesQuery, onResults) {
+    if (!SPARQL_ENDPOINT) {
+        let mockData = isAllTriplesQuery ? allTriplesJson : sparqlResultsJson;
+        if (mockData.query !== query) {
+            throw new Error("No mock data for this query");
+        }
+        onResults(mockData.variables, mockData.data);
+        return;
+    }
     const bindingsStream = await sparqlEndpointFetcher.fetchBindings(SPARQL_ENDPOINT, query);
     let variables;
     let data = [];
@@ -26,7 +36,7 @@ const saveData = (query, variables, data, filename) => {
 };
 
 const fetchAllTriplesFromEndpoint = (prefixes, done) => {
-    querySparqlEndpoint("SELECT * WHERE { ?s ?p ?o }", false, (variables, data) => {
+    querySparqlEndpoint("SELECT * WHERE { ?s ?p ?o }", false, true, (variables, data) => {
         let nodes = {};
         let edges = [];
         data.forEach(triple => {
