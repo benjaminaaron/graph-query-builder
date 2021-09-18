@@ -1,5 +1,7 @@
 import ForceGraph from 'force-graph';
 
+const FONT_SIZE = 16;
+
 const buildGraph = config => {
     let graph = ForceGraph()(config.div)
         .width(config.width)
@@ -42,6 +44,67 @@ const freezeNodeAtPos = (node, pos) => {
     // make them go there animated using forces instead of jumping there? TODO
     node.fx = pos.x;
     node.fy = pos.y;
+};
+
+const renderNode = (node, ctx, globalScale, determineNodeType) => {
+    const fontSize = FONT_SIZE / globalScale;
+    ctx.font = `${fontSize}px Sans-Serif`;
+    const textWidth = ctx.measureText(node.label).width;
+    const rectDim = [textWidth, fontSize].map(n => n + fontSize * 1.1); // padding
+    ctx.fillStyle = getColorForType(determineNodeType());
+    // ctx.fillRect(node.x - rectDim[0] / 2, node.y - rectDim[1] / 2, ...rectDim);
+    roundedRect(node.x - rectDim[0] / 2, node.y - rectDim[1] / 2, rectDim[0], rectDim[1], 20, ctx);
+    if (node.isNewInConstruct) {
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = 'yellow';
+        ctx.stroke(); // roundedRect outline
+    }
+    ctx.fill(); // roundedRect background
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'white';
+    ctx.fillText(node.label, node.x, node.y + fontSize * 0.1); // corrective factor to move text down a tiny bit within the rectangle
+};
+
+const renderEdge = (edge, ctx, globalScale) => {
+    const source = edge.source;
+    const target = edge.target;
+    // calculate label positioning
+    const textPos = Object.assign(...['x', 'y'].map(c => ({ [c]: source[c] + (target[c] - source[c]) / 2 }))); // calc middle point
+    const relLink = { x: target.x - source.x, y: target.y - source.y };
+    let textAngle = Math.atan2(relLink.y, relLink.x);
+    // maintain label vertical orientation for legibility
+    if (textAngle > Math.PI / 2) textAngle = - (Math.PI - textAngle);
+    if (textAngle < - Math.PI / 2) textAngle = - (- Math.PI - textAngle);
+    const fontSize = FONT_SIZE / globalScale;
+    ctx.font = `${fontSize}px Sans-Serif`;
+    const textWidth = ctx.measureText(edge.label).width;
+    const rectDim = [textWidth, fontSize].map(n => n + fontSize * 0.8); // padding
+    // draw text label (with background rect)
+    ctx.save();
+    ctx.translate(textPos.x, textPos.y);
+    ctx.rotate(textAngle);
+    ctx.fillStyle = edge.isNewInConstruct ? 'yellow' : 'rgba(255, 255, 255, 0.8)';
+    ctx.fillRect(- rectDim[0] / 2, - rectDim[1] / 2, ...rectDim)
+    // ctx.strokeRect(- rectDim[0] / 2, - rectDim[1] / 2, ...rectDim);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = getColorForType(edge.type);
+    ctx.fillText(edge.label, 0, 0);
+    ctx.restore();
+};
+
+const roundedRect = (x, y, w, h, r, ctx) => {
+    // from stackoverflow.com/a/7838871/2474159
+    if (w < 2 * r) r = w / 2;
+    if (h < 2 * r) r = h / 2;
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
 };
 
 const CURVATURE_MIN_MAX = 0.5;
@@ -92,4 +155,4 @@ const computeEdgeCurvatures = edges => {
     });
 };
 
-export { buildGraph, updateGraphData, getColorForType, freezeNodeAtPos }
+export { buildGraph, updateGraphData, getColorForType, freezeNodeAtPos, renderNode, renderEdge }
