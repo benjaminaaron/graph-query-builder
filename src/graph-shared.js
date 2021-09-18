@@ -46,6 +46,10 @@ const freezeNodeAtPos = (node, pos) => {
     node.fy = pos.y;
 };
 
+const showOutline = nodeOrEdge => {
+    return nodeOrEdge.isNewInConstruct || (nodeOrEdge.highlightAsType && nodeOrEdge.highlightAsType === 'Variable');
+};
+
 const renderNode = (node, ctx, globalScale, determineNodeType) => {
     const fontSize = FONT_SIZE / globalScale;
     ctx.font = `${fontSize}px Sans-Serif`;
@@ -54,7 +58,7 @@ const renderNode = (node, ctx, globalScale, determineNodeType) => {
     ctx.fillStyle = getColorForType(determineNodeType());
     // ctx.fillRect(node.x - rectDim[0] / 2, node.y - rectDim[1] / 2, ...rectDim);
     roundedRect(node.x - rectDim[0] / 2, node.y - rectDim[1] / 2, rectDim[0], rectDim[1], 20, ctx);
-    if (node.isNewInConstruct) {
+    if (showOutline(node)) {
         ctx.lineWidth = 4;
         ctx.strokeStyle = 'yellow';
         ctx.stroke(); // roundedRect outline
@@ -84,7 +88,7 @@ const renderEdge = (edge, ctx, globalScale, determineEdgeType) => {
     ctx.save();
     ctx.translate(textPos.x, textPos.y);
     ctx.rotate(textAngle);
-    ctx.fillStyle = edge.isNewInConstruct ? 'yellow' : 'rgba(255, 255, 255, 0.8)';
+    ctx.fillStyle = showOutline(edge) ? 'yellow' : 'rgba(255, 255, 255, 0.8)';
     ctx.fillRect(- rectDim[0] / 2, - rectDim[1] / 2, ...rectDim)
     // ctx.strokeRect(- rectDim[0] / 2, - rectDim[1] / 2, ...rectDim);
     ctx.textAlign = 'center';
