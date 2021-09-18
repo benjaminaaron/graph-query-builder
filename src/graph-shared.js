@@ -36,6 +36,14 @@ const getColorForType = type => {
     // Yasgui editor colors: NamedNode full #337a4d, NamedNode short #e9591e, Literal #912419, Variable #1d158b, curly brackets: #4aae23 (selected, otherwise black), keywords: #62167a
 };
 
+const freezeNodeAtPos = (node, pos) => {
+    // node.x = pos.x;
+    // node.y = pos.y;
+    // make them go there animated using forces instead of jumping there? TODO
+    node.fx = pos.x;
+    node.fy = pos.y;
+};
+
 const CURVATURE_MIN_MAX = 0.5;
 
 const computeEdgeCurvatures = edges => {
@@ -84,4 +92,4 @@ const computeEdgeCurvatures = edges => {
     });
 };
 
-export { buildGraph, updateGraphData, getColorForType }
+export { buildGraph, updateGraphData, getColorForType, freezeNodeAtPos }

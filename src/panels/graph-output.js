@@ -1,4 +1,4 @@
-import { buildGraph, updateGraphData, getColorForType } from '../graph-shared';
+import { buildGraph, updateGraphData, getColorForType, freezeNodeAtPos } from '../graph-shared';
 import { buildShortFormIfPrefixExists } from "../utils";
 import { getNodePosByValue } from "./graph-builder";
 
@@ -15,7 +15,12 @@ const setGraphOutputData = graphData => {
 
 const highlightGraphOutputSubset = graphData => {
     // reset highlighting
-    nodes.forEach(node => node.highlightAsType = null);
+    nodes.forEach(node => {
+        node.highlightAsType = null;
+        // unfreeze
+        node.fx = undefined;
+        node.fy = undefined;
+    });
     edges.forEach(edge => edge.highlightAsType = null);
     if (graphData) {
         edges.forEach(edge => markForHighlighting(edge, graphData));
@@ -38,12 +43,10 @@ const markForHighlighting = (thisEdge, otherGraphData) => {
             // some nodes will be marked twice like this, but that's ok
             thisSource.highlightAsType = otherSource.wasVariable ? 'Variable' : otherSource.type;
             thisTarget.highlightAsType = otherTarget.wasVariable ? 'Variable' : otherTarget.type;
-
-            // TODO find by value won't work for the variable ones
-            // let posSource = getNodePosByValue(thisSource.value);
-            // thisSource.x = posSource.x;
-            // thisTarget.fx = 0;
-            // ...
+            let posSource = getNodePosByValue(otherSource.wasVariable ? otherSource.valueAsVariable : otherSource.value);
+            let posTarget = getNodePosByValue(otherTarget.wasVariable ? otherTarget.valueAsVariable : otherTarget.value);
+            freezeNodeAtPos(thisSource, posSource);
+            freezeNodeAtPos(thisTarget, posTarget);
         }
     }
 };
