@@ -1,4 +1,4 @@
-import { buildGraph, updateGraphData, getColorForType, freezeNodeAtPos } from '../graph-shared';
+import {buildGraph, updateGraphData, getColorForType, freezeNodeAtPos, renderNode, renderEdge} from '../graph-shared';
 import { buildShortFormIfPrefixExists } from "../utils";
 import { getNodePosByValue } from "./graph-builder";
 
@@ -61,6 +61,18 @@ const initGraphOutput = config => {
     graph = buildGraph(config)
         .linkColor(edge => edge.highlightAsType ? getColorForType(edge.highlightAsType) : getColorForType())
         .nodeColor(node => node.highlightAsType ? getColorForType(node.highlightAsType) : getColorForType())
+        .nodeCanvasObjectMode(() => 'after')
+        .nodeCanvasObject((node, ctx, globalScale) =>
+            node.highlightAsType && renderNode(node, ctx, globalScale, () => {
+                return node.highlightAsType;
+            })
+        )
+        .linkCanvasObjectMode(() => 'after')
+        .linkCanvasObject((edge, ctx, globalScale) =>
+            edge.highlightAsType && renderEdge(edge, ctx, globalScale, () => {
+                return edge.highlightAsType;
+            })
+        );
     updateGraphData(graph, nodes, edges);
 };
 

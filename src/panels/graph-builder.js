@@ -232,7 +232,9 @@ const initGraphBuilder = config => {
         )
         .linkCanvasObjectMode(() => 'after')
         .linkCanvasObject((edge, ctx, globalScale) =>
-            edge !== interimEdge && renderEdge(edge, ctx, globalScale)
+            edge !== interimEdge && renderEdge(edge, ctx, globalScale, () => {
+                return edge.type;
+            })
         );
     update();
     setTimeout(() => graph.zoomToFit(400, 60), 600);

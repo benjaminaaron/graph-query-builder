@@ -66,7 +66,7 @@ const renderNode = (node, ctx, globalScale, determineNodeType) => {
     ctx.fillText(node.label, node.x, node.y + fontSize * 0.1); // corrective factor to move text down a tiny bit within the rectangle
 };
 
-const renderEdge = (edge, ctx, globalScale) => {
+const renderEdge = (edge, ctx, globalScale, determineEdgeType) => {
     const source = edge.source;
     const target = edge.target;
     // calculate label positioning
@@ -89,7 +89,7 @@ const renderEdge = (edge, ctx, globalScale) => {
     // ctx.strokeRect(- rectDim[0] / 2, - rectDim[1] / 2, ...rectDim);
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillStyle = getColorForType(edge.type);
+    ctx.fillStyle = getColorForType(determineEdgeType());
     ctx.fillText(edge.label, 0, 0);
     ctx.restore();
 };
