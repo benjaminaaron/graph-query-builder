@@ -1,7 +1,7 @@
 import { onValidSparqlChange, setSparqlQuery, getQuery } from './panels/sparql-editor'
 import { setGraphBuilderData, onValidGraphChange } from './panels/graph-builder';
-import { onEditorChange, updateLanguageEditor } from "./panels/language-interpreter";
-import { querySparqlEndpoint, fetchAllTriplesFromEndpoint, extractTriplesFromQuery, insertResultForVariable, orderNodesArray } from "./utils";
+import { getEditorValue, onEditorChange, updateLanguageEditor } from "./panels/language-interpreter";
+import { querySparqlEndpoint, fetchAllTriplesFromEndpoint, extractTriplesFromQuery, insertResultForVariable, orderNodesArray, extractWordFromUri } from "./utils";
 import { highlightGraphOutputSubset, setGraphOutputData } from "./panels/graph-output";
 import { buildTable } from "./panels/results-table";
 
@@ -53,13 +53,23 @@ const submitSparqlQuery = () => {
             console.log("query result:", variables, rows);
             buildTable(variables, rows, prefixes, selectedRow => {
                 let queryGraphData = null;
+                let filledSentence = "";
                 if (selectedRow) {
                     queryGraphData = extractTriplesFromQuery(currentSparqlModel, true, true);
                     queryGraphData.nodes = orderNodesArray(Object.values(queryGraphData.nodes));
                     queryGraphData.nodes.forEach(node => insertResultForVariable(node, selectedRow))
                     queryGraphData.edges.forEach(edge => insertResultForVariable(edge, selectedRow));
                     console.log("queryGraphData", queryGraphData);
+                    let sentence = getEditorValue(); // sentence with variables in it
+                    Object.keys(selectedRow).forEach(key => {
+                        if (key === "tr") return;
+                        let filledVar = "<b>" + extractWordFromUri(selectedRow[key].value) + "</b>";
+                        // get the editor value as JSON object instead to avoid having to parse it from raw text? TODO
+                        sentence = sentence.replace("<" + key + ">", filledVar);
+                    });
+                    filledSentence = "--> " + sentence;
                 }
+                outputElements.queryResultsSentenceDiv.innerHTML = filledSentence;
                 highlightGraphOutputSubset(queryGraphData);
             });
         }).then();

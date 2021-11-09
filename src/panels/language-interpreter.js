@@ -36,6 +36,10 @@ const setEditorValue = (value, _keywords = { NamedNode: [], Variable: [], Litera
     editor.setValue(value);
 };
 
+const getEditorValue = () => {
+  return editor.getValue();
+};
+
 const onEditorChange = onChange => {
     editor.on("keyup", (obj, event) => {
         if (event.key !== "Enter") {
@@ -168,4 +172,4 @@ const walkFromHere = (node, path, allPaths, nodes) => {
     node.children.forEach(child => walkFromHere(child, path.slice(0), allPaths, nodes));
 };
 
-export { initLanguageInterpreter, onEditorChange, setEditorValue, updateLanguageEditor }
+export { initLanguageInterpreter, onEditorChange, setEditorValue, updateLanguageEditor, getEditorValue }

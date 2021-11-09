@@ -62,6 +62,9 @@
         .NamedNode {
             color: #e9591e;
         }
+        #queryResultsSentenceDiv {
+            font-family: "Ubuntu Mono",serif;
+        }
     </style>
 </head>
 <body>
@@ -84,6 +87,11 @@
                 <div style="display: flex; justify-content: center; padding: 20px">
                     <button id="submitBtn" type="submit">Submit SPARQL query</button>
                 </div>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <div id="queryResultsSentenceDiv" style="padding: 20px"></div>
             </td>
         </tr>
         <tr>
@@ -118,6 +126,7 @@
             },
             outputElements: {
                 submitButtonId: 'submitBtn',
+                queryResultsSentenceDiv: document.getElementById('queryResultsSentenceDiv'),
                 outputWrapperDiv: document.getElementById('outputWrapperDiv')
             }
         });
