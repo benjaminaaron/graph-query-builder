@@ -3,7 +3,7 @@ import allTriplesJson from './data/mock-data/all-triples.json';
 import sparqlResultsJson from './data/mock-data/sparql-results.json';
 
 const sparqlEndpointFetcher = new SparqlEndpointFetcher();
-const SPARQL_ENDPOINT = null; // "http://localhost:7200/repositories/onto-engine";
+const SPARQL_ENDPOINT = "http://localhost:7200/repositories/onto-engine_main_empty"; // null
 
 async function querySparqlEndpoint(query, doSave, isAllTriplesQuery, onResults) {
     if (!SPARQL_ENDPOINT) {
