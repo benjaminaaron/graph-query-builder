@@ -1,7 +1,7 @@
 import { onValidSparqlChange, setSparqlQuery, getQuery } from './panels/sparql-editor'
 import { setGraphBuilderData, onValidGraphChange } from './panels/graph-builder';
 import { getEditorValue, onEditorChange, updateLanguageEditor } from "./panels/language-interpreter";
-import { querySparqlEndpoint, fetchAllTriplesFromEndpoint, extractTriplesFromQuery, insertResultForVariable, orderNodesArray, extractWordFromUri } from "./utils";
+import { querySparqlEndpoint, fetchAllTriplesFromEndpoint, extractTriplesFromQuery, insertResultForVariable, orderNodesArray, extractWordFromUri, SPARQL_ENDPOINT } from "./utils";
 import { highlightGraphOutputSubset, setGraphOutputData } from "./panels/graph-output";
 import { buildTable } from "./panels/results-table";
 
@@ -23,7 +23,12 @@ const initModel = _outputElements => {
     outputElements = _outputElements;
     document.getElementById(outputElements.submitButtonId).addEventListener('click', () => submitSparqlQuery());
 
-    let query = "PREFIX : <http://onto.de/default#>\n" +
+    let emptyQuery = "PREFIX : <http://onto.de/default#>\n" +
+        "SELECT * WHERE {\n" +
+        "  ?s ?p ?o ;\n" +
+        "}";
+
+    let exampleQuery = "PREFIX : <http://onto.de/default#>\n" +
         "SELECT * WHERE {\n" +
         "  ?someone :isA :Human ;\n" +
         "  \t:rentsA ?flat .\n" +
@@ -40,7 +45,7 @@ const initModel = _outputElements => {
         "    ?someone :rentsA ?flat . \n" +
         "    ?flat :isLocatedIn ?location . \n" +
         "}";*/
-    setSparqlQuery(query);
+    setSparqlQuery(SPARQL_ENDPOINT ? emptyQuery : exampleQuery);
 };
 
 const submitSparqlQuery = () => {

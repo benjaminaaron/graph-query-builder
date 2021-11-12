@@ -125,4 +125,4 @@ const orderNodesArray = unordered => {
     return ordered;
 };
 
-export { querySparqlEndpoint, fetchAllTriplesFromEndpoint, extractTriplesFromQuery, insertResultForVariable, extractWordFromUri, buildShortFormIfPrefixExists, orderNodesArray }
+export { querySparqlEndpoint, fetchAllTriplesFromEndpoint, extractTriplesFromQuery, insertResultForVariable, extractWordFromUri, buildShortFormIfPrefixExists, orderNodesArray, SPARQL_ENDPOINT }
