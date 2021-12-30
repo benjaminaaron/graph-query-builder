@@ -1,6 +1,8 @@
 # graph-query-visualizer
 Build a SPARQL query by constructing a visual graph and vice versa. I moved this out of my [OntoEngine](https://github.com/benjaminaaron/OntoEngine) coding project to make it also useful independent of it.
 
+📺 Demo [from 18:24](https://youtu.be/-AwxUrsVxsI?t=1104) in the [42min presentation video](https://github.com/benjaminaaron/OntoEngine#video-presentation-of-the-project-youtube-awxursvxsi) of the OntoEngine project.
+
 ## Tech stack
 
 - [force-graph](https://github.com/vasturiano/force-graph/) for the graph visualization
